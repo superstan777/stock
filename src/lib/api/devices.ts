@@ -34,13 +34,13 @@ export const getDevices = async (
   let q = supabase
     .from(tableName)
     .select("*", { count: "exact" })
-    .order("created_at", { ascending: true });
+    .order("serial_number", { ascending: true });
 
   if (filter && query) {
     if (filter === "install_status") {
-      q = q.eq(filter, query); // dokładne dopasowanie statusu
+      q = q.eq(filter, query);
     } else {
-      q = q.ilike(filter, `${query}%`); // częściowe dopasowanie dla tekstu
+      q = q.ilike(filter, `${query}%`);
     }
   }
 

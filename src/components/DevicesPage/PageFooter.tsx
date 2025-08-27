@@ -1,6 +1,5 @@
 "use client";
 
-import { useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import {
   Pagination,
@@ -46,51 +45,46 @@ export const PageFooter = ({ currentPage, totalPages }: PageFooterProps) => {
     </PaginationItem>
   );
 
-  const paginationItems = useMemo(() => {
-    if (totalPages <= maxVisiblePages) {
-      return Array.from({ length: totalPages }, (_, i) =>
-        renderPageItem(i + 1)
-      );
-    }
-
-    const items: React.ReactNode[] = [];
-    const left = Math.max(currentPage - siblingCount, 2);
-    const right = Math.min(currentPage + siblingCount, totalPages - 1);
-
-    // First page
-    items.push(renderPageItem(1));
-
-    // Left ellipsis
-    if (left > 2)
-      items.push(
-        <PaginationItem key="left-ellipsis">
-          <PaginationEllipsis data-testid="pagination-ellipsis" />
-        </PaginationItem>
-      );
-
-    // Middle pages
-    for (let i = left; i <= right; i++) {
-      items.push(renderPageItem(i));
-    }
-
-    // Right ellipsis
-    if (right < totalPages - 1)
-      items.push(
-        <PaginationItem key="right-ellipsis">
-          <PaginationEllipsis data-testid="pagination-ellipsis" />
-        </PaginationItem>
-      );
-
-    // Last page
-    items.push(renderPageItem(totalPages));
-
-    return items;
-  }, [currentPage, totalPages, searchParams]);
-
   if (totalPages <= 1) return null;
 
   const prevPage = Math.max(currentPage - 1, 1);
   const nextPage = Math.min(currentPage + 1, totalPages);
+
+  // Generate pagination items
+  const paginationItems: React.ReactNode[] = [];
+
+  if (totalPages <= maxVisiblePages) {
+    for (let i = 1; i <= totalPages; i++) {
+      paginationItems.push(renderPageItem(i));
+    }
+  } else {
+    const left = Math.max(currentPage - siblingCount, 2);
+    const right = Math.min(currentPage + siblingCount, totalPages - 1);
+
+    paginationItems.push(renderPageItem(1)); // first page
+
+    if (left > 2) {
+      paginationItems.push(
+        <PaginationItem key="left-ellipsis">
+          <PaginationEllipsis data-testid="pagination-ellipsis" />
+        </PaginationItem>
+      );
+    }
+
+    for (let i = left; i <= right; i++) {
+      paginationItems.push(renderPageItem(i));
+    }
+
+    if (right < totalPages - 1) {
+      paginationItems.push(
+        <PaginationItem key="right-ellipsis">
+          <PaginationEllipsis data-testid="pagination-ellipsis" />
+        </PaginationItem>
+      );
+    }
+
+    paginationItems.push(renderPageItem(totalPages)); // last page
+  }
 
   return (
     <footer className="flex justify-center mt-4">

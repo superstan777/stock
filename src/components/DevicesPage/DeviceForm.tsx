@@ -26,25 +26,36 @@ type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
 type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
 type MonitorRow = Database["public"]["Tables"]["monitors"]["Row"];
 
-// Base schema for common fields
-const baseDeviceSchema = z.object({
+const deviceSchema = z.object({
   serial_number: z.string().trim().min(1, "Serial number is required"),
   model: z.string().trim().min(1, "Model is required"),
   order_id: z.string().trim().min(1, "Order ID is required"),
   install_status: z.enum(Constants.public.Enums.install_status),
 });
 
-// Type for form data
-type DeviceFormData = z.infer<typeof baseDeviceSchema>;
+type DeviceFormData = z.infer<typeof deviceSchema>;
 
 interface DeviceFormProps {
   deviceType: DeviceType;
   mode: "add" | "edit";
-  device?: ComputerRow | MonitorRow; // Required for edit mode
+  device?: ComputerRow | MonitorRow;
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
+
+const FormField: React.FC<{
+  id: string;
+  label: string;
+  children: React.ReactNode;
+  error?: string;
+}> = ({ id, label, children, error }) => (
+  <div className="grid gap-3">
+    <Label htmlFor={id}>{label}</Label>
+    {children}
+    {error && <p className="text-red-600 text-sm">{error}</p>}
+  </div>
+);
 
 export const DeviceForm: React.FC<DeviceFormProps> = ({
   deviceType,
@@ -57,94 +68,82 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const queryClient = useQueryClient();
   const isEditMode = mode === "edit";
 
-  const formId = `${deviceType}-form`;
-  const queryKey = deviceType === "computer" ? "computers" : "monitors";
-
   const { handleSubmit, control, register, formState } =
     useForm<DeviceFormData>({
-      resolver: zodResolver(baseDeviceSchema),
+      resolver: zodResolver(deviceSchema),
       defaultValues: {
-        serial_number: device?.serial_number || "",
-        model: device?.model || "",
-        order_id: device?.order_id || "",
-        install_status: device?.install_status || "In inventory",
+        serial_number: device?.serial_number ?? "",
+        model: device?.model ?? "",
+        order_id: device?.order_id ?? "",
+        install_status: device?.install_status ?? "In inventory",
       },
     });
 
   const mutation = useMutation({
     mutationFn: async (data: DeviceFormData) => {
       if (isEditMode && device?.id) {
-        // Remove serial_number from update data for security
         const { serial_number: _, ...updateData } = data;
-
         return updateDevice(
           deviceType,
           device.id,
           updateData as ComputerUpdate | MonitorUpdate
         );
-      } else {
-        // Include serial_number for new devices
-        return addDevice(deviceType, data as ComputerInsert | MonitorInsert);
       }
+      return addDevice(deviceType, data as ComputerInsert | MonitorInsert);
     },
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),
     onSuccess: () => {
       onSuccess?.();
-      // Use refetchQueries instead of invalidateQueries for more control
-      queryClient.invalidateQueries({ queryKey: [queryKey] });
-
-      // queryClient.refetchQueries({
-      //   queryKey: [queryKey],
-      //   exact: true,
-      // });
+      queryClient.invalidateQueries({
+        queryKey: [deviceType === "computer" ? "computers" : "monitors"],
+      });
     },
     onError: (error) => onError?.(error),
   });
 
-  const onSubmit = (data: DeviceFormData) => {
-    mutation.mutate(data);
-  };
+  const onSubmit = (data: DeviceFormData) => mutation.mutate(data);
 
   return (
     <form
       role="form"
-      key={device?.id || "add"} // Force entire form to re-render when device changes
-      id={formId}
+      id={`${deviceType}-form`}
       onSubmit={handleSubmit(onSubmit)}
       className="grid gap-4"
     >
-      <div className="grid gap-3">
-        <Label htmlFor="serial_number">Serial number</Label>
+      <FormField
+        id="serial_number"
+        label="Serial number"
+        error={formState.errors.serial_number?.message}
+      >
         <Input
           id="serial_number"
           {...register("serial_number")}
           readOnly={isEditMode}
           className={isEditMode ? "bg-gray-50 cursor-not-allowed" : ""}
         />
-        {formState.errors.serial_number && (
-          <p className="text-red-600">
-            {formState.errors.serial_number.message}
-          </p>
-        )}
-      </div>
+      </FormField>
 
-      <div className="grid gap-3">
-        <Label htmlFor="model">Model</Label>
+      <FormField
+        id="model"
+        label="Model"
+        error={formState.errors.model?.message}
+      >
         <Input id="model" {...register("model")} autoFocus={isEditMode} />
-        {formState.errors.model && (
-          <p className="text-red-600">{formState.errors.model.message}</p>
-        )}
-      </div>
+      </FormField>
 
-      <div className="grid gap-3">
-        <Label htmlFor="install_status">Install status</Label>
+      <FormField
+        id="install_status"
+        label="Install status"
+        error={formState.errors.install_status?.message}
+      >
         <Controller
           control={control}
           name="install_status"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
               <SelectTrigger
+                id="install_status"
                 className="w-full"
                 data-testid="install-status-trigger"
               >
@@ -160,20 +159,15 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
             </Select>
           )}
         />
-        {formState.errors.install_status && (
-          <p className="text-red-600">
-            {formState.errors.install_status.message}
-          </p>
-        )}
-      </div>
+      </FormField>
 
-      <div className="grid gap-3">
-        <Label htmlFor="order_id">Order ID</Label>
+      <FormField
+        id="order_id"
+        label="Order ID"
+        error={formState.errors.order_id?.message}
+      >
         <Input id="order_id" {...register("order_id")} />
-        {formState.errors.order_id && (
-          <p className="text-red-600">{formState.errors.order_id.message}</p>
-        )}
-      </div>
+      </FormField>
     </form>
   );
 };

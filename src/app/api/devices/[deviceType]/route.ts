@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/client";
 import { Database } from "@/lib/types/supabase";
-
 import { DeviceType } from "@/lib/types/devices";
 
 const supabase = createClient();
@@ -25,9 +24,9 @@ const getTableName = (deviceType: DeviceType): "computers" | "monitors" =>
 // GET /api/devices/[deviceType]?page=1&filter=serial_number&query=abc
 export async function GET(
   req: NextRequest,
-  { params }: { params: { deviceType: DeviceType } }
+  { params }: { params: { deviceType: string } } // <- string
 ) {
-  const { deviceType } = params;
+  const deviceType = params.deviceType as DeviceType;
   const url = new URL(req.url);
   const page = Number(url.searchParams.get("page") || "1");
   const filter = url.searchParams.get("filter") as
@@ -64,38 +63,40 @@ export async function GET(
   return NextResponse.json({ data: data ?? [], count: count ?? 0 });
 }
 
+// POST /api/devices/[deviceType]
 export async function POST(
   req: NextRequest,
-  { params }: { params: { deviceType: DeviceType } }
+  { params }: { params: { deviceType: string } } // <- string
 ) {
   try {
+    const deviceType = params.deviceType as DeviceType;
     const device: DeviceInsert = await req.json();
-    const tableName = getTableName(params.deviceType);
+    const tableName = getTableName(deviceType);
 
     const { data, error } = await supabase.from(tableName).insert([device]);
     if (error) throw error;
 
     return NextResponse.json(data ?? []);
   } catch (err: unknown) {
-    // Bezpieczne wydobycie message z błędu
     const message =
       err instanceof Error ? err.message : "Unknown error occurred";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
-// PATCH /api/devices/[deviceType]?id=xyz - aktualizacja urządzenia
+// PATCH /api/devices/[deviceType]?id=xyz
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { deviceType: DeviceType } }
+  { params }: { params: { deviceType: string } } // <- string
 ) {
   try {
+    const deviceType = params.deviceType as DeviceType;
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
 
     const updates: DeviceUpdate = await req.json();
-    const tableName = getTableName(params.deviceType);
+    const tableName = getTableName(deviceType);
 
     const { data, error } = await supabase
       .from(tableName)

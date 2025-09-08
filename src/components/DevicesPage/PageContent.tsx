@@ -39,17 +39,11 @@ const EmptyState = ({ deviceType }: { deviceType: DeviceType }) => {
 };
 
 const ErrorState = ({ error }: { error: unknown }) => {
-  const handleRefresh = () => {
-    window.location.reload();
-  };
+  const handleRefresh = () => window.location.reload();
 
   const getErrorMessage = (error: unknown): string => {
-    if (error instanceof Error) {
-      return error.message;
-    }
-    if (typeof error === "string") {
-      return error;
-    }
+    if (error instanceof Error) return error.message;
+    if (typeof error === "string") return error;
     return "An unexpected error occurred";
   };
 
@@ -87,7 +81,6 @@ export const PageContent = ({
 }: PageContentProps) => {
   const [selectedDevice, setSelectedDevice] = useState<DeviceRow | null>(null);
   const [dialogOpen, setDialogOpen] = useState(false);
-  console.log(data);
 
   const handleSerialClick = (device: DeviceRow) => {
     setSelectedDevice(device);
@@ -99,18 +92,29 @@ export const PageContent = ({
     setSelectedDevice(null);
   };
 
+  const renderCellContent = (colValue: string, row: DeviceRow) => {
+    const value = row[colValue as keyof DeviceRow];
+    if (colValue === "serial_number") {
+      return (
+        <Button variant="link" onClick={() => handleSerialClick(row)}>
+          {value}
+        </Button>
+      );
+    }
+    return value;
+  };
+
   if (isLoading) {
+    const skeletonRows = Array.from({ length: 20 });
     return (
       <div className="flex flex-col h-full w-full space-y-4">
-        <div className="flex-1 space-y-3">
-          {Array.from({ length: 15 }).map((_, i) => (
-            <div key={i} className="flex space-x-4">
-              {columns.map((col) => (
-                <Skeleton key={col.value} className="h-8 w-32 flex-1" />
-              ))}
-            </div>
-          ))}
-        </div>
+        {skeletonRows.map((_, i) => (
+          <div key={i} className="flex space-x-4">
+            {columns.map((col) => (
+              <Skeleton key={col.value} className="h-10 flex-1 min-w-[80px]" />
+            ))}
+          </div>
+        ))}
       </div>
     );
   }
@@ -136,16 +140,7 @@ export const PageContent = ({
               <TableRow key={row.id}>
                 {columns.map((col) => (
                   <TableCell key={col.value}>
-                    {col.value === "serial_number" ? (
-                      <Button
-                        variant="link"
-                        onClick={() => handleSerialClick(row)}
-                      >
-                        {row[col.value as keyof DeviceRow]}
-                      </Button>
-                    ) : (
-                      row[col.value as keyof DeviceRow]
-                    )}
+                    {renderCellContent(col.value, row)}
                   </TableCell>
                 ))}
               </TableRow>

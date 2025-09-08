@@ -7,17 +7,14 @@ import { DeviceType } from "@/lib/types/devices";
 const supabase = createClient();
 
 // Computer types
-type ComputerRow = Database["public"]["Tables"]["computers"]["Row"];
 type ComputerInsert = Database["public"]["Tables"]["computers"]["Insert"];
 type ComputerUpdate = Database["public"]["Tables"]["computers"]["Update"];
 
 // Monitor types
-type MonitorRow = Database["public"]["Tables"]["monitors"]["Row"];
 type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
 type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
 
 // Union types
-type DeviceRow = ComputerRow | MonitorRow;
 type DeviceInsert = ComputerInsert | MonitorInsert;
 type DeviceUpdate = ComputerUpdate | MonitorUpdate;
 type InstallStatus = Database["public"]["Enums"]["install_status"];
@@ -79,8 +76,11 @@ export async function POST(
     if (error) throw error;
 
     return NextResponse.json(data ?? []);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    // Bezpieczne wydobycie message z błędu
+    const message =
+      err instanceof Error ? err.message : "Unknown error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }
 
@@ -104,7 +104,9 @@ export async function PATCH(
 
     if (error) throw error;
     return NextResponse.json(data ?? []);
-  } catch (err: any) {
-    return NextResponse.json({ error: err.message }, { status: 500 });
+  } catch (err: unknown) {
+    const message =
+      err instanceof Error ? err.message : "Unknown error occurred";
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

@@ -1,10 +1,11 @@
 import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeviceDialog } from "./DeviceDialog";
+import { DeviceFormProps } from "./DeviceForm";
 
 // Mock DeviceForm to simplify testing
 jest.mock("./DeviceForm", () => ({
-  DeviceForm: ({ setIsLoading, onSuccess, onError }: any) => (
+  DeviceForm: ({ setIsLoading, onSuccess, onError }: DeviceFormProps) => (
     <div>
       <button
         onClick={() => {
@@ -14,10 +15,10 @@ jest.mock("./DeviceForm", () => ({
       >
         Submit Form
       </button>
-      <button onClick={() => onError({ code: "23505" })}>
+      <button onClick={() => onError?.({ code: "23505" })}>
         Trigger Duplicate Error
       </button>
-      <button onClick={() => onError(new Error("generic"))}>
+      <button onClick={() => onError?.(new Error("generic"))}>
         Trigger Generic Error
       </button>
     </div>

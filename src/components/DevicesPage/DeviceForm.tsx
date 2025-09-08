@@ -35,7 +35,7 @@ const deviceSchema = z.object({
 
 type DeviceFormData = z.infer<typeof deviceSchema>;
 
-interface DeviceFormProps {
+export interface DeviceFormProps {
   deviceType: DeviceType;
   mode: "add" | "edit";
   device?: ComputerRow | MonitorRow;

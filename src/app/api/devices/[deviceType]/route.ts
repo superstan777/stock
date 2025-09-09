@@ -5,15 +5,11 @@ import { DeviceType } from "@/lib/types/devices";
 
 const supabase = createClient();
 
-// Computer types
 type ComputerInsert = Database["public"]["Tables"]["computers"]["Insert"];
 type ComputerUpdate = Database["public"]["Tables"]["computers"]["Update"];
-
-// Monitor types
 type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
 type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
 
-// Union types
 type DeviceInsert = ComputerInsert | MonitorInsert;
 type DeviceUpdate = ComputerUpdate | MonitorUpdate;
 type InstallStatus = Database["public"]["Enums"]["install_status"];
@@ -24,9 +20,11 @@ const getTableName = (deviceType: DeviceType): "computers" | "monitors" =>
 // GET /api/devices/[deviceType]?page=1&filter=serial_number&query=abc
 export async function GET(
   req: NextRequest,
-  { params }: { params: { deviceType: string } } // <- string
+  context: { params: Promise<{ deviceType: string }> } // <- uwaga: Promise
 ) {
-  const deviceType = params.deviceType as DeviceType;
+  const { deviceType: deviceTypeStr } = await context.params;
+  const deviceType = deviceTypeStr as DeviceType;
+
   const url = new URL(req.url);
   const page = Number(url.searchParams.get("page") || "1");
   const filter = url.searchParams.get("filter") as
@@ -63,13 +61,14 @@ export async function GET(
   return NextResponse.json({ data: data ?? [], count: count ?? 0 });
 }
 
-// POST /api/devices/[deviceType]
 export async function POST(
   req: NextRequest,
-  { params }: { params: { deviceType: string } } // <- string
+  context: { params: Promise<{ deviceType: string }> } // <- uwaga: Promise
 ) {
   try {
-    const deviceType = params.deviceType as DeviceType;
+    const { deviceType: deviceTypeStr } = await context.params;
+    const deviceType = deviceTypeStr as DeviceType;
+
     const device: DeviceInsert = await req.json();
     const tableName = getTableName(deviceType);
 
@@ -84,13 +83,14 @@ export async function POST(
   }
 }
 
-// PATCH /api/devices/[deviceType]?id=xyz
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { deviceType: string } } // <- string
+  context: { params: Promise<{ deviceType: string }> } // <- uwaga: Promise
 ) {
   try {
-    const deviceType = params.deviceType as DeviceType;
+    const { deviceType: deviceTypeStr } = await context.params;
+    const deviceType = deviceTypeStr as DeviceType;
+
     const url = new URL(req.url);
     const id = url.searchParams.get("id");
     if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });

@@ -3,7 +3,7 @@ interface DashboardTicketItemProps {
   value: number;
 }
 
-export const DashboardTicketItem = ({
+export const DashboardTicketCard = ({
   type,
   value,
 }: DashboardTicketItemProps) => {

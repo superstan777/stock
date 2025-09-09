@@ -63,7 +63,7 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ deviceType: string }> } // <- uwaga: Promise
+  context: { params: Promise<{ deviceType: string }> }
 ) {
   try {
     const { deviceType: deviceTypeStr } = await context.params;

@@ -1,6 +1,6 @@
 import ProtectedLayout from "./(protected)/layout";
 import { DashboardStatCard } from "@/components/Dashboard/DashboardStatCard";
-import { DashboardTicketItem } from "@/components/Dashboard/DashboardTicketCard";
+import { DashboardTicketCard } from "@/components/Dashboard/DashboardTicketCard";
 
 const mockStats = {
   computers: {
@@ -30,11 +30,11 @@ export default function DashboardPage() {
       <div className="h-full grid grid-cols-2 gap-4">
         <DashboardStatCard statType="computers" data={mockStats.computers} />
         <DashboardStatCard statType="monitors" data={mockStats.monitors} />
-        <DashboardTicketItem
+        <DashboardTicketCard
           type="inProgress"
           value={mockTickets.currentQueue}
         />
-        <DashboardTicketItem
+        <DashboardTicketCard
           type="resolved"
           value={mockTickets.resolvedThisWeek}
         />

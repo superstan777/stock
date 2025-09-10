@@ -12,15 +12,10 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { AlertCircle, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Tables } from "@/lib/types/supabase";
 import { columns } from "./DevicesPage";
 import { Skeleton } from "../ui/skeleton";
-import { DeviceType } from "@/lib/types/devices";
 import { DeviceDialog } from "./DeviceDialog";
-
-type ComputerRow = Tables<"computers">;
-type MonitorRow = Tables<"monitors">;
-type DeviceRow = ComputerRow | MonitorRow;
+import type { DeviceRow, DeviceType } from "@/lib/types/devices";
 
 type PageContentProps = {
   data: { data: DeviceRow[]; count: number } | undefined;

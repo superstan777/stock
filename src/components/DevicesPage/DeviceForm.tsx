@@ -11,20 +11,16 @@ import {
 } from "@/components/ui/select";
 import { Constants } from "@/lib/types/supabase";
 import { addDevice, updateDevice } from "@/lib/api/devices";
-import type { Database } from "@/lib/types/supabase";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { DeviceType } from "@/lib/types/devices";
-
-type ComputerInsert = Database["public"]["Tables"]["computers"]["Insert"];
-type ComputerUpdate = Database["public"]["Tables"]["computers"]["Update"];
-type ComputerRow = Database["public"]["Tables"]["computers"]["Row"];
-
-type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
-type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
-type MonitorRow = Database["public"]["Tables"]["monitors"]["Row"];
+import type {
+  DeviceRow,
+  DeviceUpdate,
+  DeviceInsert,
+} from "@/lib/types/devices";
 
 const deviceSchema = z.object({
   serial_number: z.string().trim().min(1, "Serial number is required"),
@@ -38,7 +34,7 @@ type DeviceFormData = z.infer<typeof deviceSchema>;
 export interface DeviceFormProps {
   deviceType: DeviceType;
   mode: "add" | "edit";
-  device?: ComputerRow | MonitorRow;
+  device?: DeviceRow;
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
@@ -83,13 +79,9 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
     mutationFn: async (data: DeviceFormData) => {
       if (isEditMode && device?.id) {
         const { serial_number: _, ...updateData } = data;
-        return updateDevice(
-          deviceType,
-          device.id,
-          updateData as ComputerUpdate | MonitorUpdate
-        );
+        return updateDevice(deviceType, device.id, updateData as DeviceUpdate);
       }
-      return addDevice(deviceType, data as ComputerInsert | MonitorInsert);
+      return addDevice(deviceType, data as DeviceInsert);
     },
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),

@@ -1,8 +1,7 @@
 import { render, screen } from "@testing-library/react";
-import DevicesPage, { columns } from "./DevicesPage";
+import DevicesPage from "./DevicesPage";
 import { useQuery } from "@tanstack/react-query";
 
-// 🔹 Mock PageHeader, PageContent, PageFooter
 jest.mock("./PageHeader", () => ({
   PageHeader: ({ deviceType }: any) => (
     <div data-testid={`header-${deviceType}`}>Header {deviceType}</div>

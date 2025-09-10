@@ -3,11 +3,27 @@ import { PageContent } from "./PageContent";
 import { Tables } from "@/lib/types/supabase";
 
 jest.mock("../ui/skeleton", () => ({
-  Skeleton: (props: any) => <div data-testid="skeleton" {...props} />,
+  Skeleton: (props: Record<string, unknown>) => (
+    <div data-testid="skeleton" {...props} />
+  ),
 }));
 
+type DeviceDialogProps = {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onClose: () => void;
+  device?: { serial_number?: string };
+  mode: "edit" | "add";
+};
+
 jest.mock("./DeviceDialog", () => ({
-  DeviceDialog: ({ open, onOpenChange, onClose, device, mode }: any) =>
+  DeviceDialog: ({
+    open,
+    onOpenChange,
+    onClose,
+    device,
+    mode,
+  }: DeviceDialogProps) =>
     open ? (
       <div
         role="dialog"
@@ -18,8 +34,8 @@ jest.mock("./DeviceDialog", () => ({
 
         <button
           onClick={() => {
-            if (typeof onClose === "function") onClose();
-            if (typeof onOpenChange === "function") onOpenChange(false);
+            onClose?.();
+            onOpenChange?.(false);
           }}
         >
           Save
@@ -27,7 +43,7 @@ jest.mock("./DeviceDialog", () => ({
 
         <button
           onClick={() => {
-            if (typeof onOpenChange === "function") onOpenChange(false);
+            onOpenChange?.(false);
           }}
         >
           Cancel

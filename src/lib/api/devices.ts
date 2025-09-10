@@ -1,17 +1,5 @@
 import { DeviceType } from "../types/devices";
-import { Database } from "../types/supabase";
-
-type ComputerRow = Database["public"]["Tables"]["computers"]["Row"];
-type ComputerInsert = Database["public"]["Tables"]["computers"]["Insert"];
-type ComputerUpdate = Database["public"]["Tables"]["computers"]["Update"];
-
-type MonitorRow = Database["public"]["Tables"]["monitors"]["Row"];
-type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
-type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
-
-type DeviceRow = ComputerRow | MonitorRow;
-type DeviceInsert = ComputerInsert | MonitorInsert;
-type DeviceUpdate = ComputerUpdate | MonitorUpdate;
+import { DeviceRow, DeviceInsert, DeviceUpdate } from "../types/devices";
 
 export async function getDevices(
   deviceType: DeviceType,

@@ -89,6 +89,7 @@ export const PageContent = ({
 
   const renderCellContent = (colValue: string, row: DeviceRow) => {
     const value = row[colValue as keyof DeviceRow];
+
     if (colValue === "serial_number") {
       return (
         <Button variant="link" onClick={() => handleSerialClick(row)}>
@@ -96,6 +97,11 @@ export const PageContent = ({
         </Button>
       );
     }
+
+    if (value === null || value === undefined || value === "") {
+      return <span className="text-gray-400">None</span>;
+    }
+
     return value;
   };
 

@@ -1,8 +1,8 @@
 "use client";
 
 import * as React from "react";
-import { Check, ChevronsUpDown } from "lucide-react";
-
+import { Check, ChevronsUpDown, Loader2Icon } from "lucide-react";
+import { useQuery } from "@tanstack/react-query";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -18,18 +18,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-
-type User = {
-  id: string;
-  name: string;
-};
-
-const users: User[] = [
-  { id: "1", name: "Alice Johnson" },
-  { id: "2", name: "Bob Smith" },
-  { id: "3", name: "Charlie Davis" },
-  { id: "4", name: "Diana Miller" },
-];
+import { fetchUsers } from "@/lib/fetchers/users";
+import type { User } from "@/lib/types/users";
 
 interface UserComboboxProps {
   value: string | null;
@@ -39,6 +29,11 @@ interface UserComboboxProps {
 export function UserCombobox({ value, onChange }: UserComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
+
+  const { data: users = [], isLoading } = useQuery<User[]>({
+    queryKey: ["users"],
+    queryFn: fetchUsers,
+  });
 
   const selectedUser = users.find((user) => user.id === value);
 
@@ -52,7 +47,15 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {selectedUser ? selectedUser.name : "Select user..."}
+          {isLoading ? (
+            <span className="flex items-center">
+              <Loader2Icon className="animate-spin mr-2 h-4 w-4" /> Loading...
+            </span>
+          ) : selectedUser ? (
+            selectedUser.name
+          ) : (
+            "Select user..."
+          )}
           <ChevronsUpDown className="opacity-50" />
         </Button>
       </PopoverTrigger>
@@ -64,7 +67,9 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
         <Command>
           <CommandInput placeholder="Search user..." className="h-9 w-full" />
           <CommandList>
-            <CommandEmpty>No user found.</CommandEmpty>
+            <CommandEmpty>
+              {isLoading ? "Loading..." : "No user found."}
+            </CommandEmpty>
             <CommandGroup>
               {users.map((user) => (
                 <CommandItem

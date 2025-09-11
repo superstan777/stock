@@ -22,16 +22,27 @@ import type {
   DeviceUpdate,
   DeviceInsert,
 } from "@/lib/types/devices";
+import { useEffect } from "react";
 
 import { UserCombobox } from "./UserCombobox";
 
-const deviceSchema = z.object({
-  serial_number: z.string().trim().min(1, "Serial number is required"),
-  model: z.string().trim().min(1, "Model is required"),
-  order_id: z.string().trim().min(1, "Order ID is required"),
-  install_status: z.enum(Constants.public.Enums.install_status),
-  user_id: z.string().nullable().optional(), // 👈 nowe pole
-});
+const deviceSchema = z
+  .object({
+    serial_number: z.string().trim().min(1, "Serial number is required"),
+    model: z.string().trim().min(1, "Model is required"),
+    order_id: z.string().trim().min(1, "Order ID is required"),
+    install_status: z.enum(Constants.public.Enums.install_status),
+    user_id: z.string().nullable().optional(),
+  })
+  .refine(
+    (data) =>
+      data.install_status !== "Deployed" ||
+      (!!data.user_id && data.user_id !== ""),
+    {
+      message: "User is required",
+      path: ["user_id"],
+    }
+  );
 
 type DeviceFormData = z.infer<typeof deviceSchema>;
 
@@ -68,7 +79,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const queryClient = useQueryClient();
   const isEditMode = mode === "edit";
 
-  const { handleSubmit, control, register, watch, formState } =
+  const { handleSubmit, control, register, watch, setValue, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),
       defaultValues: {
@@ -81,6 +92,12 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
     });
 
   const installStatus = watch("install_status");
+
+  useEffect(() => {
+    if (installStatus !== "Deployed") {
+      setValue("user_id", null);
+    }
+  }, [installStatus, setValue]);
 
   const mutation = useMutation({
     mutationFn: async (data: DeviceFormData) => {

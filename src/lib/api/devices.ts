@@ -6,6 +6,10 @@ import type {
   DeviceUpdate,
   DeviceInsert,
 } from "../types/devices";
+
+export function getSupabase() {
+  return createClient();
+}
 const supabase = createClient();
 
 const getTableName = (deviceType: DeviceType): "computers" | "monitors" => {
@@ -64,10 +68,16 @@ export const updateDevice = async (
   updates: DeviceUpdate
 ): Promise<DeviceRow[]> => {
   const tableName = getTableName(deviceType);
+
+  if (updates.install_status && updates.install_status !== "Deployed") {
+    updates.user_id = null;
+  }
+
   const { data, error } = await supabase
     .from(tableName)
     .update(updates)
     .eq("id", id);
+
   if (error) throw error;
   return data ?? [];
 };

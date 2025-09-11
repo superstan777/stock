@@ -5,7 +5,7 @@ import { PageHeader } from "@/components/DevicesPage/PageHeader";
 import { PageContent } from "@/components/DevicesPage/PageContent";
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-import { getDevices } from "@/lib/api/devices";
+import { getDevices } from "@/lib/fetchers/devices";
 
 import { DevicesColumnType, DeviceType } from "@/lib/types/devices";
 
@@ -32,12 +32,17 @@ export default function DevicesPage({ deviceType }: DevicesPageProps) {
     | undefined;
   const query = searchParams.get("query") || undefined;
 
-  // Use the generic getDevices function
   const queryKey = deviceType === "computer" ? "computers" : "monitors";
 
   const { data, isLoading, error } = useQuery({
     queryKey: [queryKey, currentPage, filter, query],
-    queryFn: () => getDevices(deviceType, filter, query, currentPage, 20),
+    queryFn: () =>
+      getDevices(deviceType, {
+        filter,
+        query,
+        page: currentPage,
+        perPage: 20,
+      }),
   });
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);

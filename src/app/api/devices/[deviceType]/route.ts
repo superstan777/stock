@@ -7,27 +7,30 @@ import {
   deleteDevice,
 } from "@/lib/api/devices";
 
-interface Params {
-  deviceType: string; // URL params są zawsze string
-}
+type Params = { deviceType: string };
 
 export async function GET(req: NextRequest, { params }: { params: Params }) {
-  const deviceType = params.deviceType as DeviceType;
+  const deviceType = params.deviceType as DeviceType; // cast
   const { searchParams } = new URL(req.url);
 
-  const page = parseInt(searchParams.get("page") || "1", 10);
-  const perPage = parseInt(searchParams.get("perPage") || "20", 10);
+  const page = parseInt(searchParams.get("page") || "1");
+  const perPage = parseInt(searchParams.get("perPage") || "20");
   const filter = searchParams.get("filter") as
     | "serial_number"
     | "model"
     | "order_id"
     | "install_status"
-    | undefined;
-
+    | null;
   const query = searchParams.get("query") || undefined;
 
   try {
-    const result = await getDevices(deviceType, filter, query, page, perPage);
+    const result = await getDevices(
+      deviceType,
+      filter ?? undefined,
+      query,
+      page,
+      perPage
+    );
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
@@ -55,10 +58,8 @@ export async function POST(req: NextRequest, { params }: { params: Params }) {
 export async function PATCH(req: NextRequest, { params }: { params: Params }) {
   const deviceType = params.deviceType as DeviceType;
   const { id, ...updates } = await req.json();
-
-  if (!id) {
+  if (!id)
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
-  }
 
   try {
     const result = await updateDevice(deviceType, id, updates);
@@ -74,10 +75,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Params }) {
 export async function DELETE(req: NextRequest, { params }: { params: Params }) {
   const deviceType = params.deviceType as DeviceType;
   const { id } = await req.json();
-
-  if (!id) {
+  if (!id)
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
-  }
 
   try {
     const result = await deleteDevice(deviceType, id);

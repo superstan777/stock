@@ -7,9 +7,6 @@ import type {
   DeviceInsert,
 } from "../types/devices";
 
-export function getSupabase() {
-  return createClient();
-}
 const supabase = createClient();
 
 const getTableName = (deviceType: DeviceType): "computers" | "monitors" => {

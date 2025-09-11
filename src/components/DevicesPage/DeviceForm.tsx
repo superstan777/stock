@@ -22,11 +22,14 @@ import type {
   DeviceInsert,
 } from "@/lib/types/devices";
 
+import { UserCombobox } from "./UserCombobox";
+
 const deviceSchema = z.object({
   serial_number: z.string().trim().min(1, "Serial number is required"),
   model: z.string().trim().min(1, "Model is required"),
   order_id: z.string().trim().min(1, "Order ID is required"),
   install_status: z.enum(Constants.public.Enums.install_status),
+  user_id: z.string().nullable().optional(), // 👈 nowe pole
 });
 
 type DeviceFormData = z.infer<typeof deviceSchema>;
@@ -64,7 +67,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const queryClient = useQueryClient();
   const isEditMode = mode === "edit";
 
-  const { handleSubmit, control, register, formState } =
+  const { handleSubmit, control, register, watch, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),
       defaultValues: {
@@ -72,8 +75,11 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         model: device?.model ?? "",
         order_id: device?.order_id ?? "",
         install_status: device?.install_status ?? "In inventory",
+        user_id: device?.user_id ?? null,
       },
     });
+
+  const installStatus = watch("install_status");
 
   const mutation = useMutation({
     mutationFn: async (data: DeviceFormData) => {
@@ -125,6 +131,14 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
       </FormField>
 
       <FormField
+        id="order_id"
+        label="Order ID"
+        error={formState.errors.order_id?.message}
+      >
+        <Input id="order_id" {...register("order_id")} />
+      </FormField>
+
+      <FormField
         id="install_status"
         label="Install status"
         error={formState.errors.install_status?.message}
@@ -153,13 +167,24 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         />
       </FormField>
 
-      <FormField
-        id="order_id"
-        label="Order ID"
-        error={formState.errors.order_id?.message}
-      >
-        <Input id="order_id" {...register("order_id")} />
-      </FormField>
+      {installStatus === "Deployed" && (
+        <FormField
+          id="user_id"
+          label="Assigned User"
+          error={formState.errors.user_id?.message}
+        >
+          <Controller
+            control={control}
+            name="user_id"
+            render={({ field }) => (
+              <UserCombobox
+                value={field.value ?? null}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </FormField>
+      )}
     </form>
   );
 };

@@ -47,6 +47,7 @@ export type Database = {
           model: string
           order_id: string
           serial_number: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -55,6 +56,7 @@ export type Database = {
           model: string
           order_id: string
           serial_number: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -63,8 +65,17 @@ export type Database = {
           model?: string
           order_id?: string
           serial_number?: string
+          user_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "computers_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       monitors: {
         Row: {
@@ -74,6 +85,7 @@ export type Database = {
           model: string
           order_id: string
           serial_number: string
+          user_id: string | null
         }
         Insert: {
           created_at?: string | null
@@ -82,6 +94,7 @@ export type Database = {
           model: string
           order_id: string
           serial_number: string
+          user_id?: string | null
         }
         Update: {
           created_at?: string | null
@@ -90,6 +103,36 @@ export type Database = {
           model?: string
           order_id?: string
           serial_number?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitors_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      users: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+          name: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+          name?: string
         }
         Relationships: []
       }

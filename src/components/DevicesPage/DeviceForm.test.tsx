@@ -1,17 +1,21 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import {
+  render,
+  screen,
+  fireEvent,
+  waitFor,
+  within,
+} from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { DeviceForm } from "./DeviceForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-// mock API
-jest.mock("@/lib/api/devices", () => ({
+jest.mock("@/lib/fetchers/devices", () => ({
   addDevice: jest.fn(),
   updateDevice: jest.fn(),
 }));
 
-import { addDevice, updateDevice } from "@/lib/api/devices";
+import { addDevice, updateDevice } from "@/lib/fetchers/devices";
 
-// utility wrapper with react-query client
 const renderWithClient = (ui: React.ReactNode) => {
   const queryClient = new QueryClient();
   return render(
@@ -19,7 +23,6 @@ const renderWithClient = (ui: React.ReactNode) => {
   );
 };
 
-// mock device for edit mode
 const mockDevice = {
   id: "1",
   serial_number: "ABC123",
@@ -27,6 +30,7 @@ const mockDevice = {
   order_id: "ORD001",
   install_status: "Deployed" as const,
   created_at: null,
+  user_id: "user-1",
 };
 
 describe("DeviceForm", () => {
@@ -48,7 +52,7 @@ describe("DeviceForm", () => {
     expect(screen.getByLabelText(/Serial number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Model/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Order ID/i)).toBeInTheDocument();
-    expect(screen.getByText(/Install status/i)).toBeInTheDocument();
+    expect(screen.getByTestId("install-status-trigger")).toBeInTheDocument();
   });
 
   it("renders form fields with default values in edit mode", () => {
@@ -90,6 +94,32 @@ describe("DeviceForm", () => {
     });
   });
 
+  it("validates user_id when install_status is Deployed", async () => {
+    renderWithClient(
+      <DeviceForm
+        mode="add"
+        deviceType="computer"
+        setIsLoading={jest.fn()}
+        onSuccess={jest.fn()}
+        onError={jest.fn()}
+      />
+    );
+
+    // wybieramy Deployed w select
+    const selectTrigger = screen.getByTestId("install-status-trigger");
+    fireEvent.click(selectTrigger);
+
+    const listbox = within(screen.getByRole("listbox"));
+    const deployedOption = listbox.getByText("Deployed");
+    fireEvent.click(deployedOption);
+
+    fireEvent.submit(screen.getByRole("form"));
+
+    await waitFor(() => {
+      expect(screen.getByText(/User is required/i)).toBeInTheDocument();
+    });
+  });
+
   it("submits addDevice in add mode", async () => {
     (addDevice as jest.Mock).mockResolvedValueOnce({});
 
@@ -118,6 +148,7 @@ describe("DeviceForm", () => {
         model: "HP",
         order_id: "ORDER-9",
         install_status: "In inventory",
+        user_id: null, // 👈 dodane
       });
       expect(onSuccess).toHaveBeenCalled();
     });
@@ -150,6 +181,7 @@ describe("DeviceForm", () => {
         model: "Lenovo",
         order_id: "ORD001",
         install_status: "Deployed",
+        user_id: "user-1",
       });
       expect(onSuccess).toHaveBeenCalled();
     });

@@ -14,6 +14,7 @@ export const columns: DevicesColumnType[] = [
   { label: "Model", value: "model" },
   { label: "Order ID", value: "order_id" },
   { label: "Install Status", value: "install_status" },
+  { label: "Assigned User", value: "user_id" },
 ];
 
 interface DevicesPageProps {

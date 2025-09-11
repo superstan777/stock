@@ -1,113 +1,100 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/lib/supabase/client";
-import { Database } from "@/lib/types/supabase";
 import { DeviceType } from "@/lib/types/devices";
+import {
+  getDevices,
+  addDevice,
+  updateDevice,
+  deleteDevice,
+} from "@/lib/api/devices";
 
-const supabase = createClient();
-
-type ComputerInsert = Database["public"]["Tables"]["computers"]["Insert"];
-type ComputerUpdate = Database["public"]["Tables"]["computers"]["Update"];
-type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
-type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
-
-type DeviceInsert = ComputerInsert | MonitorInsert;
-type DeviceUpdate = ComputerUpdate | MonitorUpdate;
-type InstallStatus = Database["public"]["Enums"]["install_status"];
-
-const getTableName = (deviceType: DeviceType): "computers" | "monitors" =>
-  deviceType === "computer" ? "computers" : "monitors";
-
-// GET /api/devices/[deviceType]?page=1&filter=serial_number&query=abc
 export async function GET(
   req: NextRequest,
-  context: { params: Promise<{ deviceType: string }> } // <- uwaga: Promise
+  { params }: { params: { deviceType: DeviceType } }
 ) {
-  const { deviceType: deviceTypeStr } = await context.params;
-  const deviceType = deviceTypeStr as DeviceType;
+  const { deviceType } = params;
+  const { searchParams } = new URL(req.url);
 
-  const url = new URL(req.url);
-  const page = Number(url.searchParams.get("page") || "1");
-  const filter = url.searchParams.get("filter") as
+  const page = parseInt(searchParams.get("page") || "1");
+  const perPage = parseInt(searchParams.get("perPage") || "20");
+  const filter = searchParams.get("filter") as
     | "serial_number"
     | "model"
     | "order_id"
     | "install_status"
-    | undefined;
-  const query = url.searchParams.get("query") || undefined;
+    | null;
 
-  const tableName = getTableName(deviceType);
+  const query = searchParams.get("query") || undefined;
 
-  let q = supabase
-    .from(tableName)
-    .select("*", { count: "exact" })
-    .order("serial_number", { ascending: true });
-
-  if (filter && query) {
-    if (filter === "install_status") {
-      q = q.eq(filter, query as InstallStatus);
-    } else {
-      q = q.ilike(filter, `${query}%`);
-    }
+  try {
+    const result = await getDevices(
+      deviceType,
+      filter ?? undefined,
+      query,
+      page,
+      perPage
+    );
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
   }
-
-  const from = (page - 1) * 20;
-  const to = from + 19;
-  q = q.range(from, to);
-
-  const { data, count, error } = await q;
-  if (error)
-    return NextResponse.json({ error: error.message }, { status: 500 });
-
-  return NextResponse.json({ data: data ?? [], count: count ?? 0 });
 }
 
 export async function POST(
   req: NextRequest,
-  context: { params: Promise<{ deviceType: string }> }
+  { params }: { params: { deviceType: DeviceType } }
 ) {
+  const { deviceType } = params;
+  const body = await req.json();
   try {
-    const { deviceType: deviceTypeStr } = await context.params;
-    const deviceType = deviceTypeStr as DeviceType;
-
-    const device: DeviceInsert = await req.json();
-    const tableName = getTableName(deviceType);
-
-    const { data, error } = await supabase.from(tableName).insert([device]);
-    if (error) throw error;
-
-    return NextResponse.json(data ?? []);
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+    const result = await addDevice(deviceType, body);
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
   }
 }
 
 export async function PATCH(
   req: NextRequest,
-  context: { params: Promise<{ deviceType: string }> } // <- uwaga: Promise
+  { params }: { params: { deviceType: DeviceType } }
 ) {
+  const { deviceType } = params;
+  const { id, ...updates } = await req.json();
+  if (!id)
+    return NextResponse.json({ error: "ID is required" }, { status: 400 });
+
   try {
-    const { deviceType: deviceTypeStr } = await context.params;
-    const deviceType = deviceTypeStr as DeviceType;
+    const result = await updateDevice(deviceType, id, updates);
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
+  }
+}
 
-    const url = new URL(req.url);
-    const id = url.searchParams.get("id");
-    if (!id) return NextResponse.json({ error: "Missing id" }, { status: 400 });
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: { deviceType: DeviceType } }
+) {
+  const { deviceType } = params;
+  const { id } = await req.json();
+  if (!id)
+    return NextResponse.json({ error: "ID is required" }, { status: 400 });
 
-    const updates: DeviceUpdate = await req.json();
-    const tableName = getTableName(deviceType);
-
-    const { data, error } = await supabase
-      .from(tableName)
-      .update(updates)
-      .eq("id", id);
-
-    if (error) throw error;
-    return NextResponse.json(data ?? []);
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Unknown error occurred";
-    return NextResponse.json({ error: message }, { status: 500 });
+  try {
+    const result = await deleteDevice(deviceType, id);
+    return NextResponse.json(result);
+  } catch (error) {
+    return NextResponse.json(
+      { error: (error as Error).message },
+      { status: 500 }
+    );
   }
 }

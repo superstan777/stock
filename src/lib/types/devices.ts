@@ -6,6 +6,7 @@ export type DevicesColumnType = {
 };
 
 export type DeviceType = "computer" | "monitor";
+export type InstallStatus = Database["public"]["Enums"]["install_status"];
 
 export type ComputerRow = Database["public"]["Tables"]["computers"]["Row"];
 export type ComputerInsert =

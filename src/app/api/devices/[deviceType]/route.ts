@@ -7,12 +7,14 @@ import {
   deleteDevice,
 } from "@/lib/api/devices";
 
-type Params = { deviceType: string };
+export async function GET(
+  req: NextRequest,
+  context: { params: { deviceType: string } | Promise<{ deviceType: string }> }
+) {
+  const params = await Promise.resolve(context.params);
+  const deviceType = params.deviceType as DeviceType;
 
-export async function GET(req: NextRequest, context: { params: Params }) {
-  const deviceType = context.params.deviceType as DeviceType; // cast to DeviceType
   const { searchParams } = new URL(req.url);
-
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "20");
   const filter = searchParams.get("filter") as
@@ -40,8 +42,12 @@ export async function GET(req: NextRequest, context: { params: Params }) {
   }
 }
 
-export async function POST(req: NextRequest, context: { params: Params }) {
-  const deviceType = context.params.deviceType as DeviceType;
+export async function POST(
+  req: NextRequest,
+  context: { params: { deviceType: string } | Promise<{ deviceType: string }> }
+) {
+  const params = await Promise.resolve(context.params);
+  const deviceType = params.deviceType as DeviceType;
   const body = await req.json();
 
   try {
@@ -55,8 +61,12 @@ export async function POST(req: NextRequest, context: { params: Params }) {
   }
 }
 
-export async function PATCH(req: NextRequest, context: { params: Params }) {
-  const deviceType = context.params.deviceType as DeviceType;
+export async function PATCH(
+  req: NextRequest,
+  context: { params: { deviceType: string } | Promise<{ deviceType: string }> }
+) {
+  const params = await Promise.resolve(context.params);
+  const deviceType = params.deviceType as DeviceType;
   const { id, ...updates } = await req.json();
   if (!id)
     return NextResponse.json({ error: "ID is required" }, { status: 400 });
@@ -72,8 +82,12 @@ export async function PATCH(req: NextRequest, context: { params: Params }) {
   }
 }
 
-export async function DELETE(req: NextRequest, context: { params: Params }) {
-  const deviceType = context.params.deviceType as DeviceType;
+export async function DELETE(
+  req: NextRequest,
+  context: { params: { deviceType: string } | Promise<{ deviceType: string }> }
+) {
+  const params = await Promise.resolve(context.params);
+  const deviceType = params.deviceType as DeviceType;
   const { id } = await req.json();
   if (!id)
     return NextResponse.json({ error: "ID is required" }, { status: 400 });

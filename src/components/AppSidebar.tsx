@@ -22,7 +22,7 @@ const navData = [
       { title: "Dashboard", url: "/" },
       { title: "Computers", url: "/computers" },
       { title: "Monitors", url: "/monitors" },
-      // { title: "Relations", url: "/relations" },
+      { title: "Users", url: "/users" },
     ],
   },
 ];

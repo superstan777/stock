@@ -18,8 +18,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { fetchUsers } from "@/lib/fetchers/users";
-import type { User } from "@/lib/types/users";
+import { getUsers } from "@/lib/fetchers/users";
+import type { UserRow } from "@/lib/types/users";
 
 interface UserComboboxProps {
   value: string | null;
@@ -30,9 +30,12 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
 
-  const { data: users = [], isLoading } = useQuery<User[]>({
+  const { data: users = [], isLoading } = useQuery<UserRow[]>({
     queryKey: ["users"],
-    queryFn: fetchUsers,
+    queryFn: async () => {
+      const res = await getUsers();
+      return res.data;
+    },
   });
 
   const selectedUser = users.find((user) => user.id === value);

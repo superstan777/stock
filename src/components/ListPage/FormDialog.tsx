@@ -15,10 +15,12 @@ import {
 import { Loader2Icon } from "lucide-react";
 import { UserForm } from "../UsersPage/UserForm";
 import { DeviceForm } from "../DevicesPage/DeviceForm";
+import type { EntityType, EntityDataMap } from "@/lib/types/table";
 
-interface FormDialogProps {
-  entity: "User" | "Computer" | "Monitor";
+interface FormDialogProps<T extends EntityType> {
+  entity: T;
   mode: "add" | "edit";
+  entityData?: EntityDataMap[T];
   trigger?: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -26,15 +28,16 @@ interface FormDialogProps {
   onSuccess?: () => void;
 }
 
-export const FormDialog: React.FC<FormDialogProps> = ({
+export const FormDialog = <T extends EntityType>({
   entity,
   mode,
+  entityData,
   trigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   onClose,
   onSuccess,
-}) => {
+}: FormDialogProps<T>) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -88,29 +91,21 @@ export const FormDialog: React.FC<FormDialogProps> = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        {entity === "User" && (
+        {entity === "user" && entityData && (
           <UserForm
             mode={mode}
+            user={entityData as EntityDataMap["user"]}
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}
           />
         )}
 
-        {entity === "Computer" && (
+        {(entity === "computer" || entity === "monitor") && entityData && (
           <DeviceForm
-            deviceType="computer"
+            deviceType={entity}
             mode={mode}
-            setIsLoading={setIsLoading}
-            onSuccess={handleSuccess}
-            onError={handleError}
-          />
-        )}
-
-        {entity === "Monitor" && (
-          <DeviceForm
-            deviceType="monitor"
-            mode={mode}
+            device={entityData as EntityDataMap["computer" | "monitor"]}
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}

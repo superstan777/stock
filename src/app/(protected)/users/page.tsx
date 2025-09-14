@@ -1,8 +1,40 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+
 import ListPage from "@/components/ListPage/ListPage";
 import { USER_COLUMNS } from "@/lib/constants";
+import { getUsers } from "@/lib/fetchers/users";
 
 export default function UsersPage() {
-  return <ListPage entityName="User" columns={USER_COLUMNS} />;
+  const searchParams = useSearchParams();
+
+  const currentPage = Number(searchParams.get("page")) || 1;
+  const filter = searchParams.get("filter") as "email" | "name" | undefined;
+  const query = searchParams.get("query") || undefined;
+
+  const queryKey = "users";
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: [queryKey, currentPage, filter, query],
+    queryFn: () =>
+      getUsers({
+        filter,
+        query,
+        page: currentPage,
+        perPage: 20,
+      }),
+  });
+
+  return (
+    <ListPage
+      entity="user"
+      columns={USER_COLUMNS}
+      queryResult={data}
+      isLoading={isLoading}
+      error={error}
+      clickableField="name"
+    />
+  );
 }

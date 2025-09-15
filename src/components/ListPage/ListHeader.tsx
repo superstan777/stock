@@ -7,14 +7,11 @@ import type { ColumnOption, EntityType } from "@/lib/types/table";
 import { FormDialog } from "./FormDialog";
 
 interface ListHeaderProps {
-  entityName: string;
+  entity: EntityType;
   columns: ColumnOption[];
 }
 
-export const ListHeader: React.FC<ListHeaderProps> = ({
-  entityName,
-  columns,
-}) => {
+export const ListHeader: React.FC<ListHeaderProps> = ({ entity, columns }) => {
   const pathname = usePathname();
   const title =
     pathname === "/"
@@ -29,11 +26,11 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
       </div>
 
       <FormDialog
-        entity={entityName as EntityType}
+        entity={entity}
         mode="add"
         trigger={
           <Button className="inline-flex items-center gap-2">
-            Add {entityName}
+            Add {entity}
           </Button>
         }
       />

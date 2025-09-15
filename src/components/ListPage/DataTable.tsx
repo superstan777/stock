@@ -158,7 +158,6 @@ export function DataTable<T extends EntityType>({
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           onClose={handleDialogClose}
-          trigger={null} // bo otwieramy dialog z kliknięcia
         />
       )}
     </>

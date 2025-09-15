@@ -11,6 +11,7 @@ export default function UsersPage() {
   const searchParams = useSearchParams();
 
   const currentPage = Number(searchParams.get("page")) || 1;
+
   const filter = searchParams.get("filter") as "email" | "name" | undefined;
   const query = searchParams.get("query") || undefined;
 
@@ -26,15 +27,19 @@ export default function UsersPage() {
         perPage: 20,
       }),
   });
+  const totalPages = Math.ceil((data?.count ?? 0) / 20);
+
+  const pages = { current: currentPage, total: totalPages };
 
   return (
     <ListPage
       entity="user"
       columns={USER_COLUMNS}
-      queryResult={data}
+      tableData={data?.data}
       isLoading={isLoading}
       error={error}
       clickableField="name"
+      pages={pages}
     />
   );
 }

@@ -10,12 +10,15 @@ export interface ColumnOption {
 
 export type EntityType = "user" | "computer" | "monitor";
 
-// Mapa typu danych dla każdego entity
 export type EntityDataMap = {
   user: UserRow;
   computer: DeviceRow;
   monitor: DeviceRow;
 };
 
-// Generyk dla pojedynczej jednostki danych
 export type EntityData<T extends EntityType> = EntityDataMap[T];
+
+export type PagesType = {
+  current: number;
+  total: number;
+};

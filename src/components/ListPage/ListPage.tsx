@@ -3,12 +3,15 @@
 import { DataTable } from "./DataTable";
 import { ListHeader } from "./ListHeader";
 import { ColumnOption } from "@/lib/types/table";
-import type { EntityType, EntityData } from "@/lib/types/table";
+import type { EntityType, EntityData, PagesType } from "@/lib/types/table";
+import { PaginationControls } from "./PaginationControls";
 
 interface ListPageProps<T extends EntityType> {
   entity: T;
   columns: ColumnOption[];
-  queryResult: { data: EntityData<T>[]; count: number } | undefined;
+  tableData: EntityData<T>[] | undefined;
+  pages: PagesType;
+
   clickableField: string;
   isLoading: boolean;
   error: unknown;
@@ -17,17 +20,18 @@ interface ListPageProps<T extends EntityType> {
 export default function ListPage<T extends EntityType>({
   entity,
   columns,
-  queryResult,
+  tableData,
+  pages,
   clickableField,
   isLoading,
   error,
 }: ListPageProps<T>) {
   return (
     <div className="flex flex-col h-full">
-      <ListHeader entityName={entity} columns={columns} />
+      <ListHeader entity={entity} columns={columns} />
 
       <DataTable
-        data={queryResult?.data}
+        data={tableData}
         isLoading={isLoading}
         error={error}
         columns={columns}
@@ -35,7 +39,10 @@ export default function ListPage<T extends EntityType>({
         entity={entity}
       />
 
-      {/* <PaginationControls currentPage={currentPage} totalCount={queryResult?.count ?? 0} pageSize={20} /> */}
+      <PaginationControls
+        currentPage={pages.current}
+        totalPages={pages.total}
+      />
     </div>
   );
 }

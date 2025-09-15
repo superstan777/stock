@@ -50,8 +50,8 @@ export const FormDialog = <T extends EntityType>({
 
   const title = isEditMode ? `Edit ${entity}` : `Add ${entity}`;
   const description = isEditMode
-    ? `Update ${entity.toLowerCase()} information in database`
-    : `Create new ${entity.toLowerCase()} in database`;
+    ? `Update ${entity} information in database`
+    : `Create new ${entity} in database`;
   const submitText = isEditMode ? `Update ${entity}` : `Add ${entity}`;
 
   const handleOpenChange = (value: boolean) => {
@@ -67,8 +67,8 @@ export const FormDialog = <T extends EntityType>({
 
   const handleError = (error: unknown) => {
     let message = isEditMode
-      ? `Failed to update ${entity.toLowerCase()}`
-      : `Failed to add ${entity.toLowerCase()}`;
+      ? `Failed to update ${entity}`
+      : `Failed to add ${entity}`;
 
     if (typeof error === "object" && error !== null && "code" in error) {
       const code = (error as { code: string }).code;
@@ -79,7 +79,7 @@ export const FormDialog = <T extends EntityType>({
     if (process.env.NODE_ENV === "development") console.error(error);
   };
 
-  const formId = (entity.toLowerCase() + "-form").replace(/\s+/g, "-");
+  const formId = (entity + "-form").replace(/\s+/g, "-");
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -91,21 +91,29 @@ export const FormDialog = <T extends EntityType>({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        {entity === "user" && entityData && (
+        {/* UserForm */}
+        {entity === "user" && (
           <UserForm
             mode={mode}
-            user={entityData as EntityDataMap["user"]}
+            user={
+              isEditMode ? (entityData as EntityDataMap["user"]) : undefined
+            }
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}
           />
         )}
 
-        {(entity === "computer" || entity === "monitor") && entityData && (
+        {/* DeviceForm */}
+        {(entity === "computer" || entity === "monitor") && (
           <DeviceForm
             deviceType={entity}
             mode={mode}
-            device={entityData as EntityDataMap["computer" | "monitor"]}
+            device={
+              isEditMode
+                ? (entityData as EntityDataMap["computer" | "monitor"])
+                : undefined
+            }
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}

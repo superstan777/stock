@@ -3,7 +3,7 @@
 import { usePathname } from "next/navigation";
 import { Button } from "../ui/button";
 import { SearchControls } from "./SearchControls";
-import { ColumnOption } from "@/lib/types/table";
+import type { ColumnOption, EntityType } from "@/lib/types/table";
 import { FormDialog } from "./FormDialog";
 
 interface ListHeaderProps {
@@ -29,7 +29,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({
       </div>
 
       <FormDialog
-        entity={entityName as "User" | "Computer" | "Monitor"}
+        entity={entityName as EntityType}
         mode="add"
         trigger={
           <Button className="inline-flex items-center gap-2">

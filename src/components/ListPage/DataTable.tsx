@@ -56,7 +56,12 @@ export function DataTable<T extends EntityType>({
 
     if (colValue === clickableField) {
       return (
-        <Button variant="link" onClick={() => handleCellClick(row)}>
+        <Button
+          variant="link"
+          size="sm"
+          onClick={() => handleCellClick(row)}
+          className="p-0  justify-start"
+        >
           {value as React.ReactNode}
         </Button>
       );

@@ -4,13 +4,14 @@ import type {
   DeviceInsert,
   DeviceUpdate,
 } from "@/lib/types/devices";
+import type { ComputerFilterKeyType, MonitorFilterKeyType } from "../constants";
 
 const API_BASE = "/api/devices";
 
 export const getDevices = async (
   deviceType: DeviceType,
   options?: {
-    filter?: "serial_number" | "model" | "order_id" | "install_status";
+    filter?: ComputerFilterKeyType | MonitorFilterKeyType;
     query?: string;
     page?: number;
     perPage?: number;

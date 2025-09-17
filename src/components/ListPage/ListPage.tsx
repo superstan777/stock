@@ -11,7 +11,6 @@ interface ListPageProps<T extends EntityType> {
   columns: ColumnOption[];
   tableData: EntityData<T>[] | undefined;
   pages: PagesType;
-
   clickableField: string;
   isLoading: boolean;
   error: unknown;

@@ -1,7 +1,48 @@
 "use client";
 
-import DevicesPage from "@/components/DevicesPage/DevicesPage";
+import { useSearchParams } from "next/navigation";
+import { useQuery } from "@tanstack/react-query";
+import ListPage from "@/components/ListPage/ListPage";
+import { getDevices } from "@/lib/fetchers/devices";
+import { MONITOR_COLUMNS } from "@/lib/constants";
+import type { ComputerFilterKeyType } from "@/lib/constants";
 
-export default function MonitorsPage() {
-  return <DevicesPage deviceType="monitor" />;
+export default function ComputersPage() {
+  const searchParams = useSearchParams();
+  const currentPage = Number(searchParams.get("page")) || 1;
+
+  const filter = searchParams.get("filter") as
+    | ComputerFilterKeyType
+    | undefined;
+
+  const query = searchParams.get("query") || undefined;
+
+  const queryKey = "monitors";
+
+  const { data, isLoading, error } = useQuery({
+    queryKey: [queryKey, currentPage, filter, query],
+    queryFn: () =>
+      getDevices("monitor", {
+        filter,
+        query,
+        page: currentPage,
+        perPage: 20,
+      }),
+  });
+
+  const totalPages = Math.ceil((data?.count ?? 0) / 20);
+
+  const pages = { current: currentPage, total: totalPages };
+
+  return (
+    <ListPage
+      entity="monitor"
+      columns={MONITOR_COLUMNS}
+      tableData={data?.data}
+      isLoading={isLoading}
+      error={error}
+      clickableField="serial_number"
+      pages={pages}
+    />
+  );
 }

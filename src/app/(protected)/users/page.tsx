@@ -2,17 +2,16 @@
 
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
-
 import ListPage from "@/components/ListPage/ListPage";
 import { USER_COLUMNS } from "@/lib/constants";
 import { getUsers } from "@/lib/fetchers/users";
+import type { UserFilterKeyType } from "@/lib/constants";
 
 export default function UsersPage() {
   const searchParams = useSearchParams();
-
   const currentPage = Number(searchParams.get("page")) || 1;
 
-  const filter = searchParams.get("filter") as "email" | "name" | undefined;
+  const filter = searchParams.get("filter") as UserFilterKeyType | undefined;
   const query = searchParams.get("query") || undefined;
 
   const queryKey = "users";

@@ -51,13 +51,7 @@ export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
     setInputValue("");
     const params = new URLSearchParams(searchParams);
 
-    const originalFilter = searchParams.get("filter");
-    if (originalFilter) {
-      params.set("filter", selectedFilter);
-    } else {
-      params.delete("filter");
-    }
-
+    params.delete("filter");
     params.delete("query");
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);

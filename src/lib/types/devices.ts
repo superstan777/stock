@@ -14,10 +14,22 @@ export type ComputerInsert =
 export type ComputerUpdate =
   Database["public"]["Tables"]["computers"]["Update"];
 
+export type ComputerWithUser = Omit<ComputerRow, "user_id"> & {
+  user: { email: string | null } | null;
+};
+
 export type MonitorRow = Database["public"]["Tables"]["monitors"]["Row"];
 export type MonitorInsert = Database["public"]["Tables"]["monitors"]["Insert"];
 export type MonitorUpdate = Database["public"]["Tables"]["monitors"]["Update"];
+export type MonitorWithUser = Omit<MonitorRow, "user_id"> & {
+  user: { email: string | null } | null;
+};
 
 export type DeviceRow = ComputerRow | MonitorRow;
 export type DeviceInsert = ComputerInsert | MonitorInsert;
 export type DeviceUpdate = ComputerUpdate | MonitorUpdate;
+export type DeviceWithUser = ComputerWithUser | MonitorWithUser;
+
+export type DeviceForTable = Omit<DeviceWithUser, "user"> & {
+  user_email: string | null;
+};

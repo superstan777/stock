@@ -5,6 +5,8 @@ import type {
   DeviceRow,
   DeviceUpdate,
   DeviceInsert,
+  DeviceWithUser,
+  DeviceForTable,
 } from "../types/devices";
 
 const supabase = createClient();
@@ -15,21 +17,38 @@ const getTableName = (deviceType: DeviceType): "computers" | "monitors" => {
 
 export const getDevices = async (
   deviceType: DeviceType,
-  filter?: "serial_number" | "model" | "order_id" | "install_status",
+  filter?:
+    | "serial_number"
+    | "model"
+    | "order_id"
+    | "install_status"
+    | "user.email",
   query?: string,
   page: number = 1,
   perPage: number = 20
-): Promise<{ data: DeviceRow[]; count: number }> => {
+): Promise<{ data: DeviceForTable[]; count: number }> => {
   const tableName = getTableName(deviceType);
 
   let q = supabase
     .from(tableName)
-    .select("*", { count: "exact" })
+    .select(
+      `
+      id,
+      serial_number,
+      model,
+      order_id,
+      install_status,
+      user:users(email)
+    `,
+      { count: "exact" }
+    )
     .order("serial_number", { ascending: true });
 
   if (filter && query) {
     if (filter === "install_status") {
       q = q.eq(filter, query as InstallStatus);
+    } else if (filter === "user.email") {
+      q = q.ilike("user.email", `${query}%`);
     } else {
       q = q.ilike(filter, `${query}%`);
     }
@@ -37,14 +56,21 @@ export const getDevices = async (
 
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
-
   q = q.range(from, to);
 
   const { data, count, error } = await q;
   if (error) throw error;
 
+  // mapujemy user → user_email
+  const mappedData: DeviceForTable[] = (data as DeviceWithUser[]).map(
+    (device) => ({
+      ...device,
+      user_email: device.user?.email ?? null,
+    })
+  );
+
   return {
-    data: data ?? [],
+    data: mappedData,
     count: count ?? 0,
   };
 };

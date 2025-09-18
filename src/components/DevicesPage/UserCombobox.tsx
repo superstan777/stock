@@ -55,7 +55,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
               <Loader2Icon className="animate-spin mr-2 h-4 w-4" /> Loading...
             </span>
           ) : selectedUser ? (
-            selectedUser.name
+            selectedUser.email
           ) : (
             "Select user..."
           )}
@@ -68,7 +68,10 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
         style={{ width: triggerRef.current?.offsetWidth }}
       >
         <Command>
-          <CommandInput placeholder="Search user..." className="h-9 w-full" />
+          <CommandInput
+            placeholder="Search by email..."
+            className="h-9 w-full"
+          />
           <CommandList>
             <CommandEmpty>
               {isLoading ? "Loading..." : "No user found."}
@@ -77,13 +80,13 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
               {users.map((user) => (
                 <CommandItem
                   key={user.id}
-                  value={user.id}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue === value ? null : currentValue);
+                  value={user.email} // 🔹 tutaj zamiast ID, żeby search działał po emailu
+                  onSelect={() => {
+                    onChange(user.id === value ? null : user.id);
                     setOpen(false);
                   }}
                 >
-                  {user.name}
+                  {user.email}
                   <Check
                     className={cn(
                       "ml-auto",

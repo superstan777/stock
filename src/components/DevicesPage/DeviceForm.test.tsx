@@ -154,34 +154,42 @@ describe("DeviceForm", () => {
     });
   });
 
-  it("submits updateDevice in edit mode", async () => {
+  it("submits updateDevice in edit mode (hotfix) with non-Deployed status", async () => {
     (updateDevice as jest.Mock).mockResolvedValueOnce({});
-
     const onSuccess = jest.fn();
+
+    // Tworzymy mockDevice ze statusem innym niż Deployed
+    const deviceWithDisposedStatus = {
+      ...mockDevice,
+      install_status: "Disposed" as const,
+      user_id: null,
+    };
 
     renderWithClient(
       <DeviceForm
         mode="edit"
         deviceType="computer"
-        device={mockDevice}
+        device={deviceWithDisposedStatus}
         setIsLoading={jest.fn()}
         onSuccess={onSuccess}
         onError={jest.fn()}
       />
     );
 
+    // Zmień tylko model
     const modelInput = screen.getByLabelText(/Model/i);
     await userEvent.clear(modelInput);
     await userEvent.type(modelInput, "Lenovo");
 
+    // Submit formularza
     fireEvent.submit(screen.getByRole("form"));
 
     await waitFor(() => {
       expect(updateDevice).toHaveBeenCalledWith("computer", "1", {
         model: "Lenovo",
         order_id: "ORD001",
-        install_status: "Deployed",
-        user_id: "user-1",
+        install_status: "Disposed",
+        user_id: null,
       });
       expect(onSuccess).toHaveBeenCalled();
     });

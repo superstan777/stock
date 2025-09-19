@@ -115,18 +115,18 @@ export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSearch();
           }}
-          aria-label="Search"
+          aria-label="Search input"
         />
       )}
 
-      <Button onClick={handleSearch} aria-label="Search">
+      <Button onClick={handleSearch} aria-label="Search button">
         Search
       </Button>
       <Button
         variant="outline"
         onClick={handleClear}
         disabled={!hasSomethingToClear}
-        aria-label="Clear"
+        aria-label="Clear button"
       >
         Clear
       </Button>

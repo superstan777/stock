@@ -25,8 +25,10 @@ import type {
 } from "@/lib/types/devices";
 
 import { UserCombobox } from "./UserCombobox";
+import { useQuery } from "@tanstack/react-query";
+import { getUsers } from "@/lib/fetchers/users";
+import type { UserRow } from "@/lib/types/users";
 
-// Schemat walidacji z użyciem email zamiast user_id
 const deviceSchema = z
   .object({
     serial_number: z.string().trim().min(1, "Serial number is required"),
@@ -95,13 +97,24 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const installStatus = watch("install_status");
   const userEmail = watch("user_email");
 
+  const { data: users = [] } = useQuery<UserRow[]>({
+    queryKey: ["users"],
+    queryFn: async () => (await getUsers()).data,
+  });
+
   const mutation = useMutation({
     mutationFn: async (data: DeviceFormData) => {
+      const user = users.find((u) => u.email === data.user_email);
+      const payload = {
+        ...data,
+        user_id: user?.id ?? null,
+      };
+      delete payload.user_email;
       if (isEditMode && device?.id) {
-        const { serial_number: _, ...updateData } = data;
+        const { serial_number: _, ...updateData } = payload;
         return updateDevice(deviceType, device.id, updateData as DeviceUpdate);
       }
-      return addDevice(deviceType, data as DeviceInsert);
+      return addDevice(deviceType, payload as DeviceInsert);
     },
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),
@@ -166,6 +179,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
                 id="install_status"
                 className="w-full"
                 data-testid="install-status-trigger"
+                aria-labelledby="install_status-label"
               >
                 <SelectValue placeholder="Select install status" />
               </SelectTrigger>

@@ -80,9 +80,12 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
               {users.map((user) => (
                 <CommandItem
                   key={user.id}
-                  value={user.email} // 🔹 tutaj zamiast ID, żeby search działał po emailu
-                  onSelect={() => {
-                    onChange(user.id === value ? null : user.id);
+                  value={user.email}
+                  onSelect={(currentValue) => {
+                    const selected = users.find(
+                      (u) => u.email === currentValue
+                    );
+                    onChange(selected ? selected.id : null);
                     setOpen(false);
                   }}
                 >

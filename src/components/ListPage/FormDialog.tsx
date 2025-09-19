@@ -13,13 +13,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Loader2Icon } from "lucide-react";
-import { DeviceForm } from "./DeviceForm";
-import type { DeviceType, DeviceRow } from "@/lib/types/devices";
+import { UserForm } from "../UsersPage/UserForm";
+import { DeviceForm } from "../DevicesPage/DeviceForm";
+import type { EntityType, EntityDataMap } from "@/lib/types/table";
 
-interface DeviceDialogProps {
-  deviceType: DeviceType;
+interface FormDialogProps<T extends EntityType> {
+  entity: T;
   mode: "add" | "edit";
-  device?: DeviceRow;
+  entityData?: EntityDataMap[T];
   trigger?: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -27,16 +28,16 @@ interface DeviceDialogProps {
   onSuccess?: () => void;
 }
 
-export const DeviceDialog: React.FC<DeviceDialogProps> = ({
-  deviceType,
+export const FormDialog = <T extends EntityType>({
+  entity,
   mode,
-  device,
+  entityData,
   trigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
   onClose,
   onSuccess,
-}) => {
+}: FormDialogProps<T>) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -46,13 +47,12 @@ export const DeviceDialog: React.FC<DeviceDialogProps> = ({
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
   const isEditMode = mode === "edit";
-  const deviceName = deviceType === "computer" ? "Computer" : "Monitor";
 
-  const title = isEditMode ? `Edit ${deviceName}` : `Add ${deviceName}`;
+  const title = isEditMode ? `Edit ${entity}` : `Add ${entity}`;
   const description = isEditMode
-    ? `Update ${deviceType} information in database`
-    : `Create new ${deviceType} in database`;
-  const submitText = isEditMode ? "Update device" : "Add device";
+    ? `Update ${entity} information in database`
+    : `Create new ${entity} in database`;
+  const submitText = isEditMode ? `Update ${entity}` : `Add ${entity}`;
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
@@ -67,19 +67,19 @@ export const DeviceDialog: React.FC<DeviceDialogProps> = ({
 
   const handleError = (error: unknown) => {
     let message = isEditMode
-      ? `Failed to update ${deviceType}`
-      : `Failed to add ${deviceType}`;
+      ? `Failed to update ${entity}`
+      : `Failed to add ${entity}`;
 
     if (typeof error === "object" && error !== null && "code" in error) {
       const code = (error as { code: string }).code;
-      if (code === "23505") message = `${deviceName} already in database`;
+      if (code === "23505") message = `${entity} already in database`;
     }
 
     setErrorMessage(message);
     if (process.env.NODE_ENV === "development") console.error(error);
   };
 
-  const formId = `${deviceType}-form`;
+  const formId = (entity + "-form").replace(/\s+/g, "-");
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -91,14 +91,34 @@ export const DeviceDialog: React.FC<DeviceDialogProps> = ({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        <DeviceForm
-          deviceType={deviceType}
-          mode={mode}
-          device={device}
-          setIsLoading={setIsLoading}
-          onSuccess={handleSuccess}
-          onError={handleError}
-        />
+        {/* UserForm */}
+        {entity === "user" && (
+          <UserForm
+            mode={mode}
+            user={
+              isEditMode ? (entityData as EntityDataMap["user"]) : undefined
+            }
+            setIsLoading={setIsLoading}
+            onSuccess={handleSuccess}
+            onError={handleError}
+          />
+        )}
+
+        {/* DeviceForm */}
+        {(entity === "computer" || entity === "monitor") && (
+          <DeviceForm
+            deviceType={entity}
+            mode={mode}
+            device={
+              isEditMode
+                ? (entityData as EntityDataMap["computer" | "monitor"])
+                : undefined
+            }
+            setIsLoading={setIsLoading}
+            onSuccess={handleSuccess}
+            onError={handleError}
+          />
+        )}
 
         {errorMessage && (
           <div className="text-red-600 font-medium mt-2">{errorMessage}</div>

@@ -16,7 +16,10 @@ interface PageFooterProps {
   totalPages: number;
 }
 
-export const PageFooter = ({ currentPage, totalPages }: PageFooterProps) => {
+export const PaginationControls = ({
+  currentPage,
+  totalPages,
+}: PageFooterProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
   const siblingCount = 1;

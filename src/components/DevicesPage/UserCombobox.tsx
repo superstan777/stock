@@ -18,8 +18,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { fetchUsers } from "@/lib/fetchers/users";
-import type { User } from "@/lib/types/users";
+import { getUsers } from "@/lib/fetchers/users";
+import type { UserRow } from "@/lib/types/users";
 
 interface UserComboboxProps {
   value: string | null;
@@ -30,12 +30,15 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement>(null);
 
-  const { data: users = [], isLoading } = useQuery<User[]>({
+  const { data: users = [], isLoading } = useQuery<UserRow[]>({
     queryKey: ["users"],
-    queryFn: fetchUsers,
+    queryFn: async () => {
+      const res = await getUsers();
+      return res.data;
+    },
   });
 
-  const selectedUser = users.find((user) => user.id === value);
+  const displayValue = value ?? undefined;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -47,12 +50,12 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {isLoading ? (
+          {displayValue ? (
+            displayValue
+          ) : isLoading ? (
             <span className="flex items-center">
               <Loader2Icon className="animate-spin mr-2 h-4 w-4" /> Loading...
             </span>
-          ) : selectedUser ? (
-            selectedUser.name
           ) : (
             "Select user..."
           )}
@@ -65,7 +68,10 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
         style={{ width: triggerRef.current?.offsetWidth }}
       >
         <Command>
-          <CommandInput placeholder="Search user..." className="h-9 w-full" />
+          <CommandInput
+            placeholder="Search by email..."
+            className="h-9 w-full"
+          />
           <CommandList>
             <CommandEmpty>
               {isLoading ? "Loading..." : "No user found."}
@@ -74,17 +80,17 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
               {users.map((user) => (
                 <CommandItem
                   key={user.id}
-                  value={user.id}
+                  value={user.email}
                   onSelect={(currentValue) => {
-                    onChange(currentValue === value ? null : currentValue);
+                    onChange(currentValue);
                     setOpen(false);
                   }}
                 >
-                  {user.name}
+                  {user.email}
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === user.id ? "opacity-100" : "opacity-0"
+                      value === user.email ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

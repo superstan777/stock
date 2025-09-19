@@ -11,21 +11,19 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "../ui/button";
-import { Constants } from "@/lib/types/supabase";
-import { columns } from "./DevicesPage";
-
-type InstallStatus = (typeof Constants.public.Enums.install_status)[number];
+import { ColumnOption } from "@/lib/types/table";
 
 interface SearchControlsProps {
   pathname: string;
+  columns: ColumnOption[];
 }
 
-export const SearchControls = ({ pathname }: SearchControlsProps) => {
+export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
   const [selectedFilter, setSelectedFilter] = useState<string>(
-    columns[0].value
+    columns[0]?.value || ""
   );
   const [inputValue, setInputValue] = useState("");
 
@@ -33,9 +31,11 @@ export const SearchControls = ({ pathname }: SearchControlsProps) => {
     const filter = searchParams.get("filter");
     const query = searchParams.get("query");
 
-    if (filter) setSelectedFilter(filter);
+    if (filter && columns.some((col) => col.value === filter)) {
+      setSelectedFilter(filter);
+    }
     setInputValue(query || "");
-  }, [searchParams]);
+  }, [searchParams, columns]);
 
   const handleSearch = () => {
     if (inputValue.trim()) {
@@ -51,32 +51,24 @@ export const SearchControls = ({ pathname }: SearchControlsProps) => {
     setInputValue("");
     const params = new URLSearchParams(searchParams);
 
-    const originalFilter = searchParams.get("filter");
-    if (originalFilter) {
-      params.set("filter", selectedFilter);
-    } else {
-      params.delete("filter");
-    }
-
+    params.delete("filter");
     params.delete("query");
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleFilterChange = (value: string) => {
-    const previousFilter = selectedFilter;
     setSelectedFilter(value);
-
-    if (value === "install_status" || previousFilter === "install_status") {
-      setInputValue("");
-    }
+    setInputValue("");
   };
 
-  const handleStatusChange = (value: InstallStatus) => {
+  const handleSelectValueChange = (value: string) => {
     setInputValue(value);
   };
 
   const hasSomethingToClear = inputValue.trim() !== "";
+
+  const selectedColumn = columns.find((col) => col.value === selectedFilter);
 
   return (
     <>
@@ -97,19 +89,19 @@ export const SearchControls = ({ pathname }: SearchControlsProps) => {
         </SelectContent>
       </Select>
 
-      {selectedFilter === "install_status" ? (
+      {selectedColumn?.type === "select" && selectedColumn.options ? (
         <Select
-          value={inputValue as InstallStatus}
-          onValueChange={handleStatusChange}
-          aria-label="Select status"
+          value={inputValue}
+          onValueChange={handleSelectValueChange}
+          aria-label="Select value"
         >
-          <SelectTrigger aria-label="Select status">
-            <SelectValue placeholder="Select status" />
+          <SelectTrigger aria-label="Select value">
+            <SelectValue placeholder="Select value" />
           </SelectTrigger>
           <SelectContent>
-            {Constants.public.Enums.install_status.map((status) => (
-              <SelectItem key={status} value={status}>
-                {status}
+            {selectedColumn.options.map((opt) => (
+              <SelectItem key={opt} value={opt}>
+                {opt}
               </SelectItem>
             ))}
           </SelectContent>
@@ -123,18 +115,18 @@ export const SearchControls = ({ pathname }: SearchControlsProps) => {
           onKeyDown={(e) => {
             if (e.key === "Enter") handleSearch();
           }}
-          aria-label="Search"
+          aria-label="Search input"
         />
       )}
 
-      <Button onClick={handleSearch} aria-label="Search">
+      <Button onClick={handleSearch} aria-label="Search button">
         Search
       </Button>
       <Button
         variant="outline"
         onClick={handleClear}
         disabled={!hasSomethingToClear}
-        aria-label="Clear"
+        aria-label="Clear button"
       >
         Clear
       </Button>

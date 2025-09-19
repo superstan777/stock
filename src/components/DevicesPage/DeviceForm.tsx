@@ -16,31 +16,32 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { DeviceType } from "@/lib/types/devices";
+
 import type {
+  DeviceType,
   DeviceRow,
   DeviceUpdate,
   DeviceInsert,
 } from "@/lib/types/devices";
-import { useEffect } from "react";
 
 import { UserCombobox } from "./UserCombobox";
 
+// Schemat walidacji z użyciem email zamiast user_id
 const deviceSchema = z
   .object({
     serial_number: z.string().trim().min(1, "Serial number is required"),
     model: z.string().trim().min(1, "Model is required"),
     order_id: z.string().trim().min(1, "Order ID is required"),
     install_status: z.enum(Constants.public.Enums.install_status),
-    user_id: z.string().nullable().optional(),
+    user_email: z.string().email().nullable().optional(),
   })
   .refine(
     (data) =>
       data.install_status !== "Deployed" ||
-      (!!data.user_id && data.user_id !== ""),
+      (!!data.user_email && data.user_email !== ""),
     {
       message: "User is required",
-      path: ["user_id"],
+      path: ["user_email"],
     }
   );
 
@@ -49,7 +50,7 @@ type DeviceFormData = z.infer<typeof deviceSchema>;
 export interface DeviceFormProps {
   deviceType: DeviceType;
   mode: "add" | "edit";
-  device?: DeviceRow;
+  device?: DeviceRow & { user_email?: string | null };
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
@@ -79,7 +80,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const queryClient = useQueryClient();
   const isEditMode = mode === "edit";
 
-  const { handleSubmit, control, register, watch, setValue, formState } =
+  const { handleSubmit, control, register, watch, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),
       defaultValues: {
@@ -87,17 +88,12 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         model: device?.model ?? "",
         order_id: device?.order_id ?? "",
         install_status: device?.install_status ?? "In inventory",
-        user_id: device?.user_id ?? null,
+        user_email: device?.user_email ?? null,
       },
     });
 
   const installStatus = watch("install_status");
-
-  useEffect(() => {
-    if (installStatus !== "Deployed") {
-      setValue("user_id", null);
-    }
-  }, [installStatus, setValue]);
+  const userEmail = watch("user_email");
 
   const mutation = useMutation({
     mutationFn: async (data: DeviceFormData) => {
@@ -187,16 +183,16 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
 
       {installStatus === "Deployed" && (
         <FormField
-          id="user_id"
-          label="Assigned User"
-          error={formState.errors.user_id?.message}
+          id="user_email"
+          label="User Email"
+          error={formState.errors.user_email?.message}
         >
           <Controller
             control={control}
-            name="user_id"
+            name="user_email"
             render={({ field }) => (
               <UserCombobox
-                value={field.value ?? null}
+                value={userEmail ?? null}
                 onChange={field.onChange}
               />
             )}

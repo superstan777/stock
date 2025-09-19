@@ -38,7 +38,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
     },
   });
 
-  const selectedUser = users.find((user) => user.id === value);
+  const displayValue = value ?? undefined;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -50,12 +50,12 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {isLoading ? (
+          {displayValue ? (
+            displayValue
+          ) : isLoading ? (
             <span className="flex items-center">
               <Loader2Icon className="animate-spin mr-2 h-4 w-4" /> Loading...
             </span>
-          ) : selectedUser ? (
-            selectedUser.email
           ) : (
             "Select user..."
           )}
@@ -82,10 +82,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
                   key={user.id}
                   value={user.email}
                   onSelect={(currentValue) => {
-                    const selected = users.find(
-                      (u) => u.email === currentValue
-                    );
-                    onChange(selected ? selected.id : null);
+                    onChange(currentValue);
                     setOpen(false);
                   }}
                 >
@@ -93,7 +90,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === user.id ? "opacity-100" : "opacity-0"
+                      value === user.email ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

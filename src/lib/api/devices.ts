@@ -61,11 +61,10 @@ export const getDevices = async (
   const { data, count, error } = await q;
   if (error) throw error;
 
-  // mapujemy user → user_email
   const mappedData: DeviceForTable[] = (data as DeviceWithUser[]).map(
-    (device) => ({
+    ({ user, ...device }) => ({
       ...device,
-      user_email: device.user?.email ?? null,
+      user_email: user?.email ?? null,
     })
   );
 

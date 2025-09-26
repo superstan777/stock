@@ -8,6 +8,7 @@ import type {
   DeviceWithUser,
   DeviceForTable,
 } from "../types/devices";
+import type { ComputerFilterKeyType, MonitorFilterKeyType } from "../constants";
 
 const supabase = createClient();
 
@@ -17,12 +18,7 @@ const getTableName = (deviceType: DeviceType): "computers" | "monitors" => {
 
 export const getDevices = async (
   deviceType: DeviceType,
-  filter?:
-    | "serial_number"
-    | "model"
-    | "order_id"
-    | "install_status"
-    | "user.email",
+  filter?: ComputerFilterKeyType | MonitorFilterKeyType | "user.email",
   query?: string,
   page: number = 1,
   perPage: number = 20

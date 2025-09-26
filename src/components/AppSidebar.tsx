@@ -23,6 +23,7 @@ const navData = [
       { title: "Computers", url: "/computers" },
       { title: "Monitors", url: "/monitors" },
       { title: "Users", url: "/users" },
+      { title: "Tickets", url: "/tickets" },
     ],
   },
 ];

@@ -1,16 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getUsers, addUser, updateUser, deleteUser } from "@/lib/api/users";
-import type { UserFilterKeyType } from "@/lib/constants";
+import {
+  getTickets,
+  addTicket,
+  updateTicket,
+  deleteTicket,
+} from "@/lib/api/tickets";
+import type { TicketFilterKeyType } from "@/lib/constants";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "20");
-  const filter = searchParams.get("filter") as UserFilterKeyType | null;
+  const filter = searchParams.get("filter") as TicketFilterKeyType | null;
   const query = searchParams.get("query") || undefined;
 
   try {
-    const result = await getUsers(filter ?? undefined, query, page, perPage);
+    const result = await getTickets(filter ?? undefined, query, page, perPage);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
@@ -24,7 +29,7 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
 
   try {
-    const result = await addUser(body);
+    const result = await addTicket(body);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
@@ -41,7 +46,7 @@ export async function PATCH(req: NextRequest) {
   }
 
   try {
-    const result = await updateUser(id, updates);
+    const result = await updateTicket(id, updates);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(
@@ -58,7 +63,7 @@ export async function DELETE(req: NextRequest) {
   }
 
   try {
-    const result = await deleteUser(id);
+    const result = await deleteTicket(id);
     return NextResponse.json(result);
   } catch (error) {
     return NextResponse.json(

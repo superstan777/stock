@@ -1,14 +1,14 @@
-import type { UserRow, UserInsert, UserUpdate } from "../types/users";
-import type { UserFilterKeyType } from "../constants";
+import type { TicketRow, TicketInsert, TicketUpdate } from "../types/tickets";
+import type { TicketFilterKeyType } from "../constants";
 
-const API_BASE = "/api/users";
+const API_BASE = "/api/tickets";
 
-export const getUsers = async (options?: {
-  filter?: UserFilterKeyType;
+export const getTickets = async (options?: {
+  filter?: TicketFilterKeyType;
   query?: string;
   page?: number;
   perPage?: number;
-}): Promise<{ data: UserRow[]; count: number }> => {
+}): Promise<{ data: TicketRow[]; count: number }> => {
   const params = new URLSearchParams();
   if (options?.page) params.set("page", String(options.page));
   if (options?.perPage) params.set("perPage", String(options.perPage));
@@ -16,39 +16,39 @@ export const getUsers = async (options?: {
   if (options?.query) params.set("query", options.query);
 
   const res = await fetch(`${API_BASE}?${params.toString()}`);
-  if (!res.ok) throw new Error("Failed to fetch users");
+  if (!res.ok) throw new Error("Failed to fetch tickets");
   return res.json();
 };
 
-export const addUser = async (user: UserInsert): Promise<UserRow[]> => {
+export const addTicket = async (ticket: TicketInsert): Promise<TicketRow[]> => {
   const res = await fetch(API_BASE, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(user),
+    body: JSON.stringify(ticket),
   });
-  if (!res.ok) throw new Error("Failed to add user");
+  if (!res.ok) throw new Error("Failed to add ticket");
   return res.json();
 };
 
-export const updateUser = async (
+export const updateTicket = async (
   id: string,
-  updates: UserUpdate
-): Promise<UserRow[]> => {
+  updates: TicketUpdate
+): Promise<TicketRow[]> => {
   const res = await fetch(API_BASE, {
     method: "PATCH",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id, ...updates }),
   });
-  if (!res.ok) throw new Error("Failed to update user");
+  if (!res.ok) throw new Error("Failed to update ticket");
   return res.json();
 };
 
-export const removeUser = async (id: string): Promise<UserRow[]> => {
+export const removeTicket = async (id: string): Promise<TicketRow[]> => {
   const res = await fetch(API_BASE, {
     method: "DELETE",
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify({ id }),
   });
-  if (!res.ok) throw new Error("Failed to delete user");
+  if (!res.ok) throw new Error("Failed to delete ticket");
   return res.json();
 };

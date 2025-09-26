@@ -1,19 +1,19 @@
 import { createClient } from "@/lib/supabase/client";
-import type { UserRow, UserInsert, UserUpdate } from "../types/users";
-import type { UserFilterKeyType } from "../constants";
+import type { TicketRow, TicketInsert, TicketUpdate } from "../types/tickets";
+import type { TicketFilterKeyType } from "../constants";
 
 const supabase = createClient();
 
-export const getUsers = async (
-  filter?: UserFilterKeyType,
+export const getTickets = async (
+  filter?: TicketFilterKeyType,
   query?: string,
   page: number = 1,
   perPage: number = 20
-): Promise<{ data: UserRow[]; count: number }> => {
+): Promise<{ data: TicketRow[]; count: number }> => {
   let q = supabase
-    .from("users")
+    .from("tickets")
     .select("*", { count: "exact" })
-    .order("name", { ascending: true });
+    .order("title", { ascending: true });
 
   if (filter && query) {
     q = q.ilike(filter, `${query}%`);
@@ -33,18 +33,18 @@ export const getUsers = async (
   };
 };
 
-export const addUser = async (user: UserInsert): Promise<UserRow[]> => {
-  const { data, error } = await supabase.from("users").insert([user]);
+export const addTicket = async (ticket: TicketInsert): Promise<TicketRow[]> => {
+  const { data, error } = await supabase.from("tickets").insert([ticket]);
   if (error) throw error;
   return data ?? [];
 };
 
-export const updateUser = async (
+export const updateTicket = async (
   id: string,
-  updates: UserUpdate
-): Promise<UserRow[]> => {
+  updates: TicketUpdate
+): Promise<TicketRow[]> => {
   const { data, error } = await supabase
-    .from("users")
+    .from("tickets")
     .update(updates)
     .eq("id", id);
 
@@ -52,8 +52,8 @@ export const updateUser = async (
   return data ?? [];
 };
 
-export const deleteUser = async (id: string): Promise<UserRow[]> => {
-  const { data, error } = await supabase.from("users").delete().eq("id", id);
+export const deleteTicket = async (id: string): Promise<TicketRow[]> => {
+  const { data, error } = await supabase.from("tickets").delete().eq("id", id);
   if (error) throw error;
   return data ?? [];
 };

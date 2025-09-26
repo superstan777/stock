@@ -6,6 +6,10 @@ import {
   updateDevice,
   deleteDevice,
 } from "@/lib/api/devices";
+import type {
+  ComputerFilterKeyType,
+  MonitorFilterKeyType,
+} from "@/lib/constants";
 
 export async function GET(
   req: NextRequest,
@@ -18,10 +22,8 @@ export async function GET(
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "20");
   const filter = searchParams.get("filter") as
-    | "serial_number"
-    | "model"
-    | "order_id"
-    | "install_status"
+    | MonitorFilterKeyType
+    | ComputerFilterKeyType
     | null;
   const query = searchParams.get("query") || undefined;
 

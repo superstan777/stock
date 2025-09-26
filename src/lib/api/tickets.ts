@@ -1,34 +1,57 @@
 import { createClient } from "@/lib/supabase/client";
-import type { TicketRow, TicketInsert, TicketUpdate } from "../types/tickets";
+import type {
+  TicketRow,
+  TicketInsert,
+  TicketUpdate,
+  TicketForTable,
+  TicketWithUser,
+} from "../types/tickets";
 import type { TicketFilterKeyType } from "../constants";
 
 const supabase = createClient();
 
 export const getTickets = async (
-  filter?: TicketFilterKeyType,
+  filter?: TicketFilterKeyType | "user.email",
   query?: string,
   page: number = 1,
   perPage: number = 20
-): Promise<{ data: TicketRow[]; count: number }> => {
+): Promise<{ data: TicketForTable[]; count: number }> => {
   let q = supabase
     .from("tickets")
-    .select("*", { count: "exact" })
+    .select(
+      `
+      *,
+      caller:users!caller_id(email)
+    `,
+      { count: "exact" }
+    )
     .order("title", { ascending: true });
 
   if (filter && query) {
-    q = q.ilike(filter, `${query}%`);
+    if (filter === "user.email") {
+      q = q.ilike("caller.email", `${query}%`);
+    } else {
+      q = q.ilike(filter, `${query}%`);
+    }
   }
 
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
-
   q = q.range(from, to);
 
   const { data, count, error } = await q;
   if (error) throw error;
 
+  // Mapowanie caller.email na user_email
+  const mappedData: TicketForTable[] = (data as TicketWithUser[]).map(
+    ({ caller, ...ticket }) => ({
+      ...ticket,
+      caller_email: caller?.email ?? null,
+    })
+  );
+
   return {
-    data: data ?? [],
+    data: mappedData,
     count: count ?? 0,
   };
 };

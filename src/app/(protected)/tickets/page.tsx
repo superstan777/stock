@@ -28,6 +28,7 @@ export default function ComputersPage() {
         perPage: 20,
       }),
   });
+  console.log(data);
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
 

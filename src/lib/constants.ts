@@ -18,13 +18,13 @@ function formatLabel(key: string): string {
 type AllTicketKeys = keyof TicketRow;
 export type TicketFilterKeyType = Exclude<
   AllTicketKeys,
-  "id" | "created_at" | "description"
+  "id" | "created_at" | "description" | "caller_id"
 >;
 
-const TICKET_FILTER_KEYS: Array<TicketFilterKeyType> = [
+const TICKET_FILTER_KEYS: Array<TicketFilterKeyType | "caller_email"> = [
   "number",
   "title",
-  "caller_id",
+  "caller_email",
   "status",
   "assigned_to",
 ];

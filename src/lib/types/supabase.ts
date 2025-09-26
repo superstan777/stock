@@ -115,6 +115,54 @@ export type Database = {
           },
         ]
       }
+      tickets: {
+        Row: {
+          assigned_to: string | null
+          caller_id: string | null
+          created_at: string
+          description: string | null
+          id: string
+          number: number
+          status: string
+          title: string
+        }
+        Insert: {
+          assigned_to?: string | null
+          caller_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          number?: number
+          status?: string
+          title: string
+        }
+        Update: {
+          assigned_to?: string | null
+          caller_id?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          number?: number
+          status?: string
+          title?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tickets_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tickets_caller_id_fkey"
+            columns: ["caller_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       users: {
         Row: {
           created_at: string

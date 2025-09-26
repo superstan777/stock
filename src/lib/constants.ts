@@ -2,6 +2,7 @@ import type { UserRow } from "@/lib/types/users";
 import type { ColumnOption } from "./types/table";
 import type { ComputerRow, MonitorRow, InstallStatus } from "./types/devices";
 import { Constants } from "@/lib/types/supabase";
+import { TicketRow } from "./types/tickets";
 
 function formatLabel(key: string): string {
   return key
@@ -13,11 +14,33 @@ function formatLabel(key: string): string {
     .join(" ");
 }
 
+// Tickets
+type AllTicketKeys = keyof TicketRow;
+export type TicketFilterKeyType = Exclude<
+  AllTicketKeys,
+  "id" | "created_at" | "description"
+>;
+
+const TICKET_FILTER_KEYS: Array<TicketFilterKeyType> = [
+  "number",
+  "title",
+  "caller_id",
+  "status",
+  "assigned_to",
+];
+
+export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => ({
+  value: key,
+  label: formatLabel(key),
+  type: "text",
+}));
+
 // Users
 type AllUserKeys = keyof UserRow;
 export type UserFilterKeyType = Exclude<AllUserKeys, "id" | "created_at">;
 
 const USER_FILTER_KEYS: Array<keyof UserRow> = ["name", "email"];
+
 export const USER_COLUMNS: ColumnOption[] = USER_FILTER_KEYS.map((key) => ({
   value: key,
   label: formatLabel(key),

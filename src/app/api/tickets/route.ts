@@ -5,12 +5,13 @@ import {
   updateTicket,
   deleteTicket,
 } from "@/lib/api/tickets";
+import type { TicketFilterKeyType } from "@/lib/constants";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "20");
-  const filter = searchParams.get("filter") as "title" | "description" | null;
+  const filter = searchParams.get("filter") as TicketFilterKeyType | null;
   const query = searchParams.get("query") || undefined;
 
   try {

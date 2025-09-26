@@ -51,7 +51,7 @@ export const USER_COLUMNS: ColumnOption[] = USER_FILTER_KEYS.map((key) => ({
 type AllComputerKeys = keyof ComputerRow;
 export type ComputerFilterKeyType = Exclude<
   AllComputerKeys,
-  "id" | "created_at"
+  "id" | "created_at" | "user_id"
 >;
 
 const COMPUTER_FILTER_KEYS: Array<ComputerFilterKeyType | "user_email"> = [
@@ -75,14 +75,6 @@ export const COMPUTER_COLUMNS: ColumnOption[] = COMPUTER_FILTER_KEYS.map(
       };
     }
 
-    if (key === "user_email") {
-      return {
-        value: key,
-        label: "User Email",
-        type: "text",
-      };
-    }
-
     return {
       value: key,
       label: formatLabel(key),
@@ -93,7 +85,10 @@ export const COMPUTER_COLUMNS: ColumnOption[] = COMPUTER_FILTER_KEYS.map(
 
 // Monitors
 type AllMonitorKeys = keyof MonitorRow;
-export type MonitorFilterKeyType = Exclude<AllMonitorKeys, "id" | "created_at">;
+export type MonitorFilterKeyType = Exclude<
+  AllMonitorKeys,
+  "id" | "created_at" | "user_id"
+>;
 
 const MONITOR_FILTER_KEYS: Array<MonitorFilterKeyType | "user_email"> = [
   "serial_number",
@@ -113,14 +108,6 @@ export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
         options: Object.values(
           Constants.public.Enums.install_status
         ) as InstallStatus[],
-      };
-    }
-
-    if (key === "user_email") {
-      return {
-        value: key,
-        label: "User Email",
-        type: "text",
       };
     }
 

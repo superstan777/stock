@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
 import type { TicketRow, TicketInsert, TicketUpdate } from "../types/tickets";
+import type { TicketFilterKeyType } from "../constants";
 
 const supabase = createClient();
 
 export const getTickets = async (
-  filter?: "title" | "description",
+  filter?: TicketFilterKeyType,
   query?: string,
   page: number = 1,
   perPage: number = 20

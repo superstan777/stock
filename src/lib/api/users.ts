@@ -1,10 +1,11 @@
 import { createClient } from "@/lib/supabase/client";
 import type { UserRow, UserInsert, UserUpdate } from "../types/users";
+import type { UserFilterKeyType } from "../constants";
 
 const supabase = createClient();
 
 export const getUsers = async (
-  filter?: "name" | "email",
+  filter?: UserFilterKeyType,
   query?: string,
   page: number = 1,
   perPage: number = 20

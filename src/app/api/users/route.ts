@@ -1,11 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getUsers, addUser, updateUser, deleteUser } from "@/lib/api/users";
+import type { UserFilterKeyType } from "@/lib/constants";
 
 export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const page = parseInt(searchParams.get("page") || "1");
   const perPage = parseInt(searchParams.get("perPage") || "20");
-  const filter = searchParams.get("filter") as "name" | "email" | null;
+  const filter = searchParams.get("filter") as UserFilterKeyType | null;
   const query = searchParams.get("query") || undefined;
 
   try {

@@ -57,3 +57,15 @@ export const deleteUser = async (id: string): Promise<UserRow[]> => {
   if (error) throw error;
   return data ?? [];
 };
+
+export const getUser = async (id: string): Promise<UserRow | null> => {
+  const { data, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+
+  return data ?? null;
+};

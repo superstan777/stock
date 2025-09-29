@@ -1,5 +1,5 @@
 import type { UserRow } from "./users";
-import type { DeviceRow } from "./devices";
+import type { DeviceRow, DeviceForTable } from "./devices";
 import type { TicketRow } from "./tickets";
 
 export interface ColumnOption {
@@ -13,8 +13,8 @@ export type EntityType = "user" | "computer" | "monitor" | "ticket";
 
 export type EntityDataMap = {
   user: UserRow;
-  computer: DeviceRow;
-  monitor: DeviceRow;
+  computer: DeviceForTable;
+  monitor: DeviceForTable;
   ticket: TicketRow;
 };
 

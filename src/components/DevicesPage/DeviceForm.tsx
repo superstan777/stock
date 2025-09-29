@@ -10,24 +10,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Constants } from "@/lib/types/supabase";
-import { addDevice, updateDevice } from "@/lib/fetchers/devices";
+import { addDevice } from "@/lib/fetchers/devices";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 
-import type {
-  DeviceType,
-  DeviceRow,
-  DeviceUpdate,
-  DeviceInsert,
-} from "@/lib/types/devices";
+import type { DeviceType, DeviceInsert } from "@/lib/types/devices";
+import type { UserRow } from "@/lib/types/users";
 
 import { UserCombobox } from "./UserCombobox";
-import { useQuery } from "@tanstack/react-query";
 import { getUsers } from "@/lib/fetchers/users";
-import type { UserRow } from "@/lib/types/users";
 
 const deviceSchema = z
   .object({
@@ -51,8 +45,6 @@ type DeviceFormData = z.infer<typeof deviceSchema>;
 
 export interface DeviceFormProps {
   deviceType: DeviceType;
-  mode: "add" | "edit";
-  device?: DeviceRow & { user_email?: string | null };
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
@@ -73,24 +65,21 @@ const FormField: React.FC<{
 
 export const DeviceForm: React.FC<DeviceFormProps> = ({
   deviceType,
-  mode,
-  device,
   setIsLoading,
   onSuccess,
   onError,
 }) => {
   const queryClient = useQueryClient();
-  const isEditMode = mode === "edit";
 
   const { handleSubmit, control, register, watch, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),
       defaultValues: {
-        serial_number: device?.serial_number ?? "",
-        model: device?.model ?? "",
-        order_id: device?.order_id ?? "",
-        install_status: device?.install_status ?? "In inventory",
-        user_email: device?.user_email ?? null,
+        serial_number: "",
+        model: "",
+        order_id: "",
+        install_status: "In inventory",
+        user_email: null,
       },
     });
 
@@ -110,10 +99,6 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         user_id: user?.id ?? null,
       };
       delete payload.user_email;
-      if (isEditMode && device?.id) {
-        const { serial_number: _, ...updateData } = payload;
-        return updateDevice(deviceType, device.id, updateData as DeviceUpdate);
-      }
       return addDevice(deviceType, payload as DeviceInsert);
     },
     onMutate: () => setIsLoading(true),
@@ -141,12 +126,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         label="Serial number"
         error={formState.errors.serial_number?.message}
       >
-        <Input
-          id="serial_number"
-          {...register("serial_number")}
-          readOnly={isEditMode}
-          className={isEditMode ? "bg-gray-50 cursor-not-allowed" : ""}
-        />
+        <Input id="serial_number" {...register("serial_number")} autoFocus />
       </FormField>
 
       <FormField
@@ -154,7 +134,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         label="Model"
         error={formState.errors.model?.message}
       >
-        <Input id="model" {...register("model")} autoFocus={isEditMode} />
+        <Input id="model" {...register("model")} />
       </FormField>
 
       <FormField
@@ -175,12 +155,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
           name="install_status"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger
-                id="install_status"
-                className="w-full"
-                data-testid="install-status-trigger"
-                aria-labelledby="install_status-label"
-              >
+              <SelectTrigger id="install_status" className="w-full">
                 <SelectValue placeholder="Select install status" />
               </SelectTrigger>
               <SelectContent>

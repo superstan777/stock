@@ -11,10 +11,11 @@ import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { Loader2 as Loader2Icon } from "lucide-react";
 import type { UserRow, UserUpdate } from "@/lib/types/users";
+import { toast } from "sonner";
 
 const userSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
-  email: z.string().email("Invalid email"),
+  email: z.email("Invalid email"),
 });
 
 type UserFormData = z.infer<typeof userSchema>;
@@ -38,8 +39,14 @@ export const UserForm: React.FC<UserPageProps> = ({ user }) => {
   const mutation = useMutation({
     mutationFn: (data: UserFormData) => updateUser(user.id, data as UserUpdate),
     onSuccess: () => {
+      toast.success("User has been updated");
+
       queryClient.invalidateQueries({ queryKey: ["users"] });
       router.refresh();
+    },
+    onError: (error) => {
+      console.error("Update failed:", error);
+      toast.error("Failed to update user. Please try again.");
     },
   });
 

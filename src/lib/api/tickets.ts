@@ -80,3 +80,27 @@ export const deleteTicket = async (id: string): Promise<TicketRow[]> => {
   if (error) throw error;
   return data ?? [];
 };
+
+export const getUserTickets = async (
+  userId: string,
+  page: number = 1,
+  perPage: number = 20
+): Promise<{ data: TicketRow[]; count: number }> => {
+  let q = supabase
+    .from("tickets")
+    .select("*", { count: "exact" })
+    .eq("caller_id", userId)
+    .order("created_at", { ascending: false });
+
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+  q = q.range(from, to);
+
+  const { data, count, error } = await q;
+  if (error) throw error;
+
+  return {
+    data: (data as TicketRow[]) ?? [],
+    count: count ?? 0,
+  };
+};

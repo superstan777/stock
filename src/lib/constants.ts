@@ -120,9 +120,8 @@ export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
 );
 
 // User Computers
-type UserComputersFilterKeyType = Exclude<ComputerFilterKeyType, "user_email">;
 
-const USER_COMPUTERS_FILTER_KEYS: Array<UserComputersFilterKeyType> = [
+const USER_COMPUTERS_FILTER_KEYS: Array<ComputerFilterKeyType> = [
   "serial_number",
   "model",
   "order_id",
@@ -150,9 +149,8 @@ export const USER_COMPUTERS_COLUMNS: ColumnOption[] =
   });
 
 // User Monitors
-type UserMonitorsFilterKeyType = Exclude<MonitorFilterKeyType, "user_email">;
 
-const USER_MONITORS_FILTER_KEYS: Array<UserMonitorsFilterKeyType> = [
+const USER_MONITORS_FILTER_KEYS: Array<MonitorFilterKeyType> = [
   "serial_number",
   "model",
   "order_id",
@@ -178,3 +176,19 @@ export const USER_MONITORS_COLUMNS: ColumnOption[] =
       type: "text",
     };
   });
+
+// User Tickets
+
+const USER_TICKETS_FILTER_KEYS: Array<TicketFilterKeyType> = [
+  "number",
+  "title",
+  "status",
+  "assigned_to",
+];
+
+export const USER_TICKETS_COLUMNS: ColumnOption[] =
+  USER_TICKETS_FILTER_KEYS.map((key) => ({
+    value: key,
+    label: formatLabel(key),
+    type: "text",
+  }));

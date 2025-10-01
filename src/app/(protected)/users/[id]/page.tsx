@@ -2,6 +2,7 @@ import { getUser } from "@/lib/api/users";
 import { UserForm } from "@/components/UsersPage/UserForm";
 
 import { UserDevicesList } from "@/components/UsersPage/UserDevicesList";
+import { UserTicketsList } from "@/components/UsersPage/UserTicketsList";
 
 interface UserPageProps {
   params: { id: string };
@@ -24,6 +25,7 @@ export default async function UserPage({ params }: UserPageProps) {
 
       <UserDevicesList userId={id} deviceType="computer" />
       <UserDevicesList userId={id} deviceType="monitor" />
+      <UserTicketsList userId={id} />
     </div>
   );
 }

@@ -39,9 +39,17 @@ export function DataTable<T extends EntityType>({
 }: DataTableProps<T>) {
   const router = useRouter();
 
+  const entityRoutes: Record<EntityType, string> = {
+    user: "users",
+    computer: "computers",
+    monitor: "monitors",
+    ticket: "tickets",
+  };
+
   const handleCellClick = (row: EntityData<T>) => {
-    if (row.id) {
-      router.push(`/users/${row.id}`);
+    const route = entityRoutes[entity];
+    if (row.id && route) {
+      router.push(`/${route}/${row.id}`);
     }
   };
 

@@ -138,3 +138,36 @@ export const getUserDevices = async (
     user_email: user?.email ?? null,
   }));
 };
+
+export const getDevice = async (
+  deviceType: DeviceType,
+  id: string
+): Promise<DeviceForTable | null> => {
+  const tableName = getTableName(deviceType);
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .select(
+      `
+      id,
+      serial_number,
+      model,
+      order_id,
+      install_status,
+      user:users(email)
+    `
+    )
+    .eq("id", id)
+    .single(); // pobieramy tylko jeden rekord
+
+  if (error) throw error;
+
+  if (!data) return null;
+
+  const { user, ...device } = data as DeviceWithUser;
+
+  return {
+    ...device,
+    user_email: user?.email ?? null,
+  };
+};

@@ -13,6 +13,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Loader2Icon } from "lucide-react";
+import { AddUserForm } from "../UsersPage/AddUserForm";
 
 import { DeviceForm } from "../DevicesPage/DeviceForm";
 import type { EntityType } from "@/lib/types/table";
@@ -84,7 +85,17 @@ export const FormDialog = <T extends EntityType>({
         {/* DeviceForm - add-only */}
         {(entity === "computer" || entity === "monitor") && (
           <DeviceForm
+            mode="add"
             deviceType={entity}
+            setIsLoading={setIsLoading}
+            onSuccess={handleSuccess}
+            onError={handleError}
+          />
+        )}
+
+        {/* UserForm - add-only */}
+        {entity === "user" && (
+          <AddUserForm
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}

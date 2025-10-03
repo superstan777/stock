@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "../ui/form-field";
 import {
   Select,
   SelectContent,
@@ -10,18 +10,24 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Constants } from "@/lib/types/supabase";
-import { addDevice } from "@/lib/fetchers/devices";
-
-import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { addDevice, updateDevice } from "@/lib/fetchers/devices";
+import { toast } from "sonner";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-import type { DeviceType, DeviceInsert } from "@/lib/types/devices";
-import type { UserRow } from "@/lib/types/users";
+import { useRouter } from "next/navigation";
+import type {
+  DeviceType,
+  DeviceUpdate,
+  DeviceInsert,
+  DeviceForTable,
+} from "@/lib/types/devices";
 
 import { UserCombobox } from "./UserCombobox";
+import { useQuery } from "@tanstack/react-query";
 import { getUsers } from "@/lib/fetchers/users";
+import type { UserRow } from "@/lib/types/users";
 
 const deviceSchema = z
   .object({
@@ -29,7 +35,7 @@ const deviceSchema = z
     model: z.string().trim().min(1, "Model is required"),
     order_id: z.string().trim().min(1, "Order ID is required"),
     install_status: z.enum(Constants.public.Enums.install_status),
-    user_email: z.string().email().nullable().optional(),
+    user_email: z.email().nullable().optional(),
   })
   .refine(
     (data) =>
@@ -45,41 +51,32 @@ type DeviceFormData = z.infer<typeof deviceSchema>;
 
 export interface DeviceFormProps {
   deviceType: DeviceType;
+  device?: DeviceForTable;
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
 
-const FormField: React.FC<{
-  id: string;
-  label: string;
-  children: React.ReactNode;
-  error?: string;
-}> = ({ id, label, children, error }) => (
-  <div className="grid gap-3">
-    <Label htmlFor={id}>{label}</Label>
-    {children}
-    {error && <p className="text-red-600 text-sm">{error}</p>}
-  </div>
-);
-
 export const DeviceForm: React.FC<DeviceFormProps> = ({
   deviceType,
+  device,
   setIsLoading,
   onSuccess,
   onError,
 }) => {
+  const router = useRouter();
   const queryClient = useQueryClient();
+  const isEditMode = !!device;
 
   const { handleSubmit, control, register, watch, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),
       defaultValues: {
-        serial_number: "",
-        model: "",
-        order_id: "",
-        install_status: "In inventory",
-        user_email: null,
+        serial_number: device?.serial_number ?? "",
+        model: device?.model ?? "",
+        order_id: device?.order_id ?? "",
+        install_status: device?.install_status ?? "In inventory",
+        user_email: device?.user_email ?? null,
       },
     });
 
@@ -99,17 +96,35 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         user_id: user?.id ?? null,
       };
       delete payload.user_email;
+      if (isEditMode && device?.id) {
+        const { serial_number: _, ...updateData } = payload;
+        return updateDevice(deviceType, device.id, updateData as DeviceUpdate);
+      }
       return addDevice(deviceType, payload as DeviceInsert);
     },
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),
     onSuccess: () => {
-      onSuccess?.();
+      toast.success(
+        device ? "Device has been updated" : "Device has been added"
+      );
       queryClient.invalidateQueries({
         queryKey: [deviceType === "computer" ? "computers" : "monitors"],
       });
+      if (device) {
+        router.refresh();
+      }
+      onSuccess?.();
     },
-    onError: (error) => onError?.(error),
+    onError: (error) => {
+      console.error("Device form failed:", error);
+      toast.error(
+        device
+          ? "Failed to update device. Please try again."
+          : "Failed to add device. Please try again."
+      );
+      onError?.(error);
+    },
   });
 
   const onSubmit = (data: DeviceFormData) => mutation.mutate(data);
@@ -126,7 +141,12 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         label="Serial number"
         error={formState.errors.serial_number?.message}
       >
-        <Input id="serial_number" {...register("serial_number")} autoFocus />
+        <Input
+          id="serial_number"
+          {...register("serial_number")}
+          readOnly={isEditMode}
+          className={isEditMode ? "bg-gray-50 cursor-not-allowed" : ""}
+        />
       </FormField>
 
       <FormField
@@ -134,7 +154,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         label="Model"
         error={formState.errors.model?.message}
       >
-        <Input id="model" {...register("model")} />
+        <Input id="model" {...register("model")} autoFocus={isEditMode} />
       </FormField>
 
       <FormField
@@ -155,7 +175,12 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
           name="install_status"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger id="install_status" className="w-full">
+              <SelectTrigger
+                id="install_status"
+                className="w-full"
+                data-testid="install-status-trigger"
+                aria-labelledby="install_status-label"
+              >
                 <SelectValue placeholder="Select install status" />
               </SelectTrigger>
               <SelectContent>

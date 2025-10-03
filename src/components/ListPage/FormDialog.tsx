@@ -86,7 +86,6 @@ export const FormDialog = <T extends EntityType>({
         {/* DeviceForm - add-only */}
         {(entity === "computer" || entity === "monitor") && (
           <DeviceForm
-            mode="add"
             deviceType={entity}
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}

@@ -33,7 +33,6 @@ export const UserDevicesList = ({
       </div>
     );
   }
-  console.log(data);
 
   return (
     <div className="mt-8">

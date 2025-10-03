@@ -21,12 +21,16 @@ export const UserDevicesList = ({
   });
 
   if (isLoading) {
-    return <div className="mt-8">Loading {deviceType}s...</div>;
+    return (
+      <div className="mt-8 w-full text-center">Loading {deviceType}s...</div>
+    );
   }
 
   if (isError) {
     return (
-      <div className="mt-8 text-red-500">Error loading {deviceType}s.</div>
+      <div className="mt-8 text-red-500 text-center">
+        Error loading {deviceType}s.
+      </div>
     );
   }
   console.log(data);

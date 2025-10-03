@@ -20,11 +20,15 @@ export const UserTicketsList = ({ userId }: UserTicketsListProps) => {
   });
 
   if (isLoading) {
-    return <div className="mt-8">Loading tickets...</div>;
+    return <div className="mt-8 text-center">Loading tickets...</div>;
   }
 
   if (isError) {
-    return <div className="mt-8 text-red-500">Error loading tickets.</div>;
+    return (
+      <div className="mt-8 text-red-500 text-center">
+        Error loading tickets.
+      </div>
+    );
   }
 
   return (

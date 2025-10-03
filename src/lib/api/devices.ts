@@ -109,3 +109,65 @@ export const deleteDevice = async (
   if (error) throw error;
   return data ?? [];
 };
+
+export const getUserDevices = async (
+  deviceType: DeviceType,
+  userId: string
+): Promise<DeviceForTable[]> => {
+  const tableName = getTableName(deviceType);
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .select(
+      `
+      id,
+      serial_number,
+      model,
+      order_id,
+      install_status,
+      user:users(email)
+    `
+    )
+    .eq("user_id", userId)
+    .order("serial_number", { ascending: true });
+
+  if (error) throw error;
+
+  return (data as DeviceWithUser[]).map(({ user, ...device }) => ({
+    ...device,
+    user_email: user?.email ?? null,
+  }));
+};
+
+export const getDevice = async (
+  deviceType: DeviceType,
+  id: string
+): Promise<DeviceForTable | null> => {
+  const tableName = getTableName(deviceType);
+
+  const { data, error } = await supabase
+    .from(tableName)
+    .select(
+      `
+      id,
+      serial_number,
+      model,
+      order_id,
+      install_status,
+      user:users(email)
+    `
+    )
+    .eq("id", id)
+    .single(); // pobieramy tylko jeden rekord
+
+  if (error) throw error;
+
+  if (!data) return null;
+
+  const { user, ...device } = data as DeviceWithUser;
+
+  return {
+    ...device,
+    user_email: user?.email ?? null,
+  };
+};

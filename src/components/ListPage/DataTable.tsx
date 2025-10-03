@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useRouter } from "next/navigation";
 import {
   Table,
   TableBody,
@@ -19,10 +19,9 @@ import type {
   EntityData,
   EntityDataMap,
 } from "@/lib/types/table";
-import { FormDialog } from "./FormDialog";
 
 interface DataTableProps<T extends EntityType> {
-  data: EntityDataMap[T][] | undefined; // <- tutaj też korzystamy z mapy
+  data: EntityDataMap[T][] | undefined;
   isLoading: boolean;
   error: unknown;
   columns: ColumnOption[];
@@ -38,17 +37,20 @@ export function DataTable<T extends EntityType>({
   entity,
   clickableField,
 }: DataTableProps<T>) {
-  const [selectedRow, setSelectedRow] = useState<EntityData<T> | null>(null);
-  const [dialogOpen, setDialogOpen] = useState(false);
+  const router = useRouter();
 
-  const handleCellClick = (row: EntityData<T>) => {
-    setSelectedRow(row);
-    setDialogOpen(true);
+  const entityRoutes: Record<EntityType, string> = {
+    user: "users",
+    computer: "computers",
+    monitor: "monitors",
+    ticket: "tickets",
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedRow(null);
+  const handleCellClick = (row: EntityData<T>) => {
+    const route = entityRoutes[entity];
+    if (row.id && route) {
+      router.push(`/${route}/${row.id}`);
+    }
   };
 
   const renderCellContent = (colValue: string, row: EntityData<T>) => {
@@ -60,7 +62,7 @@ export function DataTable<T extends EntityType>({
           variant="link"
           size="sm"
           onClick={() => handleCellClick(row)}
-          className="p-0  justify-start"
+          className="p-0 justify-start"
         >
           {value as React.ReactNode}
         </Button>
@@ -130,41 +132,28 @@ export function DataTable<T extends EntityType>({
   }
 
   return (
-    <>
-      <div className="flex-1 overflow-auto mb-4">
-        <Table>
-          <TableHeader>
-            <TableRow>
+    <div className="flex-1 overflow-auto mb-4">
+      <Table>
+        <TableHeader>
+          <TableRow>
+            {columns.map((col) => (
+              <TableHead key={col.value}>{col.label}</TableHead>
+            ))}
+          </TableRow>
+        </TableHeader>
+
+        <TableBody>
+          {data.map((row) => (
+            <TableRow key={row.id}>
               {columns.map((col) => (
-                <TableHead key={col.value}>{col.label}</TableHead>
+                <TableCell key={col.value}>
+                  {renderCellContent(col.value, row)}
+                </TableCell>
               ))}
             </TableRow>
-          </TableHeader>
-
-          <TableBody>
-            {data.map((row) => (
-              <TableRow key={row.id}>
-                {columns.map((col) => (
-                  <TableCell key={col.value}>
-                    {renderCellContent(col.value, row)}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
-
-      {selectedRow && (
-        <FormDialog
-          entity={entity}
-          entityData={selectedRow}
-          mode="edit"
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          onClose={handleDialogClose}
-        />
-      )}
-    </>
+          ))}
+        </TableBody>
+      </Table>
+    </div>
   );
 }

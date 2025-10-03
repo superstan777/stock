@@ -118,3 +118,77 @@ export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
     };
   }
 );
+
+// User Computers
+
+const USER_COMPUTERS_FILTER_KEYS: Array<ComputerFilterKeyType> = [
+  "serial_number",
+  "model",
+  "order_id",
+  "install_status",
+];
+
+export const USER_COMPUTERS_COLUMNS: ColumnOption[] =
+  USER_COMPUTERS_FILTER_KEYS.map((key) => {
+    if (key === "install_status") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "select",
+        options: Object.values(
+          Constants.public.Enums.install_status
+        ) as InstallStatus[],
+      };
+    }
+
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text",
+    };
+  });
+
+// User Monitors
+
+const USER_MONITORS_FILTER_KEYS: Array<MonitorFilterKeyType> = [
+  "serial_number",
+  "model",
+  "order_id",
+  "install_status",
+];
+
+export const USER_MONITORS_COLUMNS: ColumnOption[] =
+  USER_MONITORS_FILTER_KEYS.map((key) => {
+    if (key === "install_status") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "select",
+        options: Object.values(
+          Constants.public.Enums.install_status
+        ) as InstallStatus[],
+      };
+    }
+
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text",
+    };
+  });
+
+// User Tickets
+
+const USER_TICKETS_FILTER_KEYS: Array<TicketFilterKeyType> = [
+  "number",
+  "title",
+  "status",
+  "assigned_to",
+];
+
+export const USER_TICKETS_COLUMNS: ColumnOption[] =
+  USER_TICKETS_FILTER_KEYS.map((key) => ({
+    value: key,
+    label: formatLabel(key),
+    type: "text",
+  }));

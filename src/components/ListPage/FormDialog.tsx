@@ -13,14 +13,14 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Loader2Icon } from "lucide-react";
+
 import { UserForm } from "../UsersPage/UserForm";
+
 import { DeviceForm } from "../DevicesPage/DeviceForm";
-import type { EntityType, EntityDataMap } from "@/lib/types/table";
+import type { EntityType } from "@/lib/types/table";
 
 interface FormDialogProps<T extends EntityType> {
   entity: T;
-  mode: "add" | "edit";
-  entityData?: EntityDataMap[T];
   trigger?: ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
@@ -30,8 +30,6 @@ interface FormDialogProps<T extends EntityType> {
 
 export const FormDialog = <T extends EntityType>({
   entity,
-  mode,
-  entityData,
   trigger,
   open: controlledOpen,
   onOpenChange: controlledOnOpenChange,
@@ -46,13 +44,9 @@ export const FormDialog = <T extends EntityType>({
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
-  const isEditMode = mode === "edit";
-
-  const title = isEditMode ? `Edit ${entity}` : `Add ${entity}`;
-  const description = isEditMode
-    ? `Update ${entity} information in database`
-    : `Create new ${entity} in database`;
-  const submitText = isEditMode ? `Update ${entity}` : `Add ${entity}`;
+  const title = `Add ${entity}`;
+  const description = `Create new ${entity} in database`;
+  const submitText = `Add ${entity}`;
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);
@@ -66,9 +60,7 @@ export const FormDialog = <T extends EntityType>({
   };
 
   const handleError = (error: unknown) => {
-    let message = isEditMode
-      ? `Failed to update ${entity}`
-      : `Failed to add ${entity}`;
+    let message = `Failed to add ${entity}`;
 
     if (typeof error === "object" && error !== null && "code" in error) {
       const code = (error as { code: string }).code;
@@ -91,29 +83,19 @@ export const FormDialog = <T extends EntityType>({
           <DialogDescription>{description}</DialogDescription>
         </DialogHeader>
 
-        {/* UserForm */}
-        {entity === "user" && (
-          <UserForm
-            mode={mode}
-            user={
-              isEditMode ? (entityData as EntityDataMap["user"]) : undefined
-            }
+        {/* DeviceForm - add-only */}
+        {(entity === "computer" || entity === "monitor") && (
+          <DeviceForm
+            deviceType={entity}
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}
           />
         )}
 
-        {/* DeviceForm */}
-        {(entity === "computer" || entity === "monitor") && (
-          <DeviceForm
-            deviceType={entity}
-            mode={mode}
-            device={
-              isEditMode
-                ? (entityData as EntityDataMap["computer" | "monitor"])
-                : undefined
-            }
+        {/* UserForm - add-only */}
+        {entity === "user" && (
+          <UserForm
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}

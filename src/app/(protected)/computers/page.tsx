@@ -30,6 +30,7 @@ export default function ComputersPage() {
   });
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
+  console.log(data?.data);
 
   const pages = { current: currentPage, total: totalPages };
 

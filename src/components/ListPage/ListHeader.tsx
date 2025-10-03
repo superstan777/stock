@@ -27,7 +27,6 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ entity, columns }) => {
 
       <FormDialog
         entity={entity}
-        mode="add"
         trigger={
           <Button className="inline-flex items-center gap-2">
             Add {entity}

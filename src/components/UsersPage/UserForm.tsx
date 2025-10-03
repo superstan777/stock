@@ -1,15 +1,17 @@
 "use client";
 
+import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-
-import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm } from "react-hook-form";
-import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { UserRow, UserInsert, UserUpdate } from "@/lib/types/users";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { z } from "zod";
+import { toast } from "sonner";
 
-import { addUser, updateUser } from "@/lib/fetchers/users";
+import { addUser } from "@/lib/api/users";
+import { updateUser } from "@/lib/fetchers/users";
+
+import type { UserRow, UserUpdate } from "@/lib/types/users";
 
 const userSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -19,35 +21,19 @@ const userSchema = z.object({
 type UserFormData = z.infer<typeof userSchema>;
 
 export interface UserFormProps {
-  mode: "add" | "edit";
   user?: UserRow;
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
 
-const FormField: React.FC<{
-  id: string;
-  label: string;
-  children: React.ReactNode;
-  error?: string;
-}> = ({ id, label, children, error }) => (
-  <div className="grid gap-3">
-    <Label htmlFor={id}>{label}</Label>
-    {children}
-    {error && <p className="text-red-600 text-sm">{error}</p>}
-  </div>
-);
-
 export const UserForm: React.FC<UserFormProps> = ({
-  mode,
   user,
   setIsLoading,
   onSuccess,
   onError,
 }) => {
   const queryClient = useQueryClient();
-  const isEditMode = mode === "edit";
 
   const { handleSubmit, register, formState } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
@@ -58,26 +44,34 @@ export const UserForm: React.FC<UserFormProps> = ({
   });
 
   const mutation = useMutation({
-    mutationFn: async (data: UserFormData) => {
-      if (isEditMode && user?.id) {
+    mutationFn: (data: UserFormData) => {
+      if (user) {
         return updateUser(user.id, data as UserUpdate);
       }
-      return addUser(data as UserInsert);
+      return addUser(data);
     },
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),
     onSuccess: () => {
-      onSuccess?.();
+      toast.success(user ? "User has been updated" : "User has been added");
       queryClient.invalidateQueries({ queryKey: ["users"] });
+
+      onSuccess?.();
     },
-    onError: (error) => onError?.(error),
+    onError: (error) => {
+      toast.error(
+        user
+          ? "Failed to update user. Please try again."
+          : "Failed to add user. Please try again."
+      );
+      onError?.(error);
+    },
   });
 
   const onSubmit = (data: UserFormData) => mutation.mutate(data);
 
   return (
     <form
-      role="form"
       id="user-form"
       onSubmit={handleSubmit(onSubmit)}
       className="grid gap-4"

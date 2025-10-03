@@ -1,7 +1,7 @@
 "use client";
 
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { FormField } from "../ui/form-field";
 import {
   Select,
   SelectContent,
@@ -11,17 +11,16 @@ import {
 } from "@/components/ui/select";
 import { Constants } from "@/lib/types/supabase";
 import { addDevice, updateDevice } from "@/lib/fetchers/devices";
-
+import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-
 import type {
   DeviceType,
-  DeviceRow,
   DeviceUpdate,
   DeviceInsert,
+  DeviceForTable,
 } from "@/lib/types/devices";
 
 import { UserCombobox } from "./UserCombobox";
@@ -35,7 +34,7 @@ const deviceSchema = z
     model: z.string().trim().min(1, "Model is required"),
     order_id: z.string().trim().min(1, "Order ID is required"),
     install_status: z.enum(Constants.public.Enums.install_status),
-    user_email: z.string().email().nullable().optional(),
+    user_email: z.email().nullable().optional(),
   })
   .refine(
     (data) =>
@@ -51,36 +50,21 @@ type DeviceFormData = z.infer<typeof deviceSchema>;
 
 export interface DeviceFormProps {
   deviceType: DeviceType;
-  mode: "add" | "edit";
-  device?: DeviceRow & { user_email?: string | null };
+  device?: DeviceForTable;
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
 
-const FormField: React.FC<{
-  id: string;
-  label: string;
-  children: React.ReactNode;
-  error?: string;
-}> = ({ id, label, children, error }) => (
-  <div className="grid gap-3">
-    <Label htmlFor={id}>{label}</Label>
-    {children}
-    {error && <p className="text-red-600 text-sm">{error}</p>}
-  </div>
-);
-
 export const DeviceForm: React.FC<DeviceFormProps> = ({
   deviceType,
-  mode,
   device,
   setIsLoading,
   onSuccess,
   onError,
 }) => {
   const queryClient = useQueryClient();
-  const isEditMode = mode === "edit";
+  const isEditMode = !!device;
 
   const { handleSubmit, control, register, watch, formState } =
     useForm<DeviceFormData>({
@@ -119,12 +103,22 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),
     onSuccess: () => {
-      onSuccess?.();
+      toast.success(
+        device ? "Device has been updated" : "Device has been added"
+      );
       queryClient.invalidateQueries({
         queryKey: [deviceType === "computer" ? "computers" : "monitors"],
       });
+      onSuccess?.();
     },
-    onError: (error) => onError?.(error),
+    onError: (error) => {
+      toast.error(
+        device
+          ? "Failed to update device. Please try again."
+          : "Failed to add device. Please try again."
+      );
+      onError?.(error);
+    },
   });
 
   const onSubmit = (data: DeviceFormData) => mutation.mutate(data);

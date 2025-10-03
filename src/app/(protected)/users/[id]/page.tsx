@@ -1,27 +1,18 @@
 import { getUser } from "@/lib/api/users";
-import { UserForm } from "@/components/UsersPage/UserForm";
-import { UserTabs } from "@/components/UsersPage/UserTabs";
+import { UserPageContent } from "@/components/UsersPage/UserPageContent";
 
-interface UserPageProps {
-  params: { id: string };
-}
-
-export default async function UserPage({ params }: UserPageProps) {
-  const { id } = params;
+export default async function UserPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
+  const { id } = await params;
 
   if (!id) return <div>No user id provided.</div>;
 
   const user = await getUser(id);
 
-  if (!user) {
-    return <div>User not found.</div>;
-  }
+  if (!user) return <div>User not found.</div>;
 
-  return (
-    <div className="p-4">
-      <UserForm user={user} />
-
-      <UserTabs userId={id} />
-    </div>
-  );
+  return <UserPageContent user={user} userId={id} />;
 }

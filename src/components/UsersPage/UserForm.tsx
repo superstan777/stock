@@ -1,17 +1,93 @@
+// "use client";
+
+// import { FormField } from "@/components/ui/form-field";
+// import { Input } from "@/components/ui/input";
+// import { useForm } from "react-hook-form";
+// import { zodResolver } from "@hookform/resolvers/zod";
+// import { useMutation, useQueryClient } from "@tanstack/react-query";
+// import { updateUser } from "@/lib/fetchers/users";
+// import { useRouter } from "next/navigation";
+// import { z } from "zod";
+// import type { UserRow, UserUpdate } from "@/lib/types/users";
+// import { toast } from "sonner";
+
+// const userSchema = z.object({
+//   name: z.string().trim().min(1, "Name is required"),
+//   email: z.email("Invalid email"),
+// });
+
+// type UserFormData = z.infer<typeof userSchema>;
+
+// interface UserPageProps {
+//   user: UserRow;
+//   setIsLoading: (loading: boolean) => void;
+// }
+
+// export const UserForm: React.FC<UserPageProps> = ({ user, setIsLoading }) => {
+//   const router = useRouter();
+//   const queryClient = useQueryClient();
+
+//   const { handleSubmit, register, formState } = useForm<UserFormData>({
+//     resolver: zodResolver(userSchema),
+//     defaultValues: {
+//       name: user.name,
+//       email: user.email,
+//     },
+//   });
+
+//   const mutation = useMutation({
+//     mutationFn: (data: UserFormData) => updateUser(user.id, data as UserUpdate),
+//     onMutate: () => setIsLoading(true),
+//     onSettled: () => setIsLoading(false),
+//     onSuccess: () => {
+//       toast.success("User has been updated");
+//       queryClient.invalidateQueries({ queryKey: ["users"] });
+//       router.refresh();
+//     },
+//     onError: (error) => {
+//       console.error("Update failed:", error);
+//       toast.error("Failed to update user. Please try again.");
+//     },
+//   });
+
+//   const onSubmit = (data: UserFormData) => mutation.mutate(data);
+
+//   return (
+//     <form
+//       id="user-form"
+//       onSubmit={handleSubmit(onSubmit)}
+//       className="grid gap-4 p-4 max-w-md mx-auto"
+//     >
+//       <FormField id="name" label="Name" error={formState.errors.name?.message}>
+//         <Input id="name" {...register("name")} />
+//       </FormField>
+
+//       <FormField
+//         id="email"
+//         label="Email"
+//         error={formState.errors.email?.message}
+//       >
+//         <Input id="email" {...register("email")} />
+//       </FormField>
+//     </form>
+//   );
+// };
+
 "use client";
 
 import { FormField } from "@/components/ui/form-field";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateUser } from "@/lib/fetchers/users";
 import { useRouter } from "next/navigation";
 import { z } from "zod";
-import { Loader2 as Loader2Icon } from "lucide-react";
-import type { UserRow, UserUpdate } from "@/lib/types/users";
 import { toast } from "sonner";
+
+import { addUser } from "@/lib/api/users";
+import { updateUser } from "@/lib/fetchers/users";
+
+import type { UserRow, UserUpdate } from "@/lib/types/users";
 
 const userSchema = z.object({
   name: z.string().trim().min(1, "Name is required"),
@@ -20,33 +96,55 @@ const userSchema = z.object({
 
 type UserFormData = z.infer<typeof userSchema>;
 
-interface UserPageProps {
-  user: UserRow;
+export interface UserFormProps {
+  user?: UserRow;
+  setIsLoading: (loading: boolean) => void;
+  onSuccess?: () => void;
+  onError?: (error: unknown) => void;
 }
 
-export const UserForm: React.FC<UserPageProps> = ({ user }) => {
+export const UserForm: React.FC<UserFormProps> = ({
+  user,
+  setIsLoading,
+  onSuccess,
+  onError,
+}) => {
   const router = useRouter();
   const queryClient = useQueryClient();
 
   const { handleSubmit, register, formState } = useForm<UserFormData>({
     resolver: zodResolver(userSchema),
     defaultValues: {
-      name: user.name,
-      email: user.email,
+      name: user?.name ?? "",
+      email: user?.email ?? "",
     },
   });
 
   const mutation = useMutation({
-    mutationFn: (data: UserFormData) => updateUser(user.id, data as UserUpdate),
+    mutationFn: (data: UserFormData) => {
+      if (user) {
+        return updateUser(user.id, data as UserUpdate);
+      }
+      return addUser(data);
+    },
+    onMutate: () => setIsLoading(true),
+    onSettled: () => setIsLoading(false),
     onSuccess: () => {
-      toast.success("User has been updated");
-
+      toast.success(user ? "User has been updated" : "User has been added");
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      router.refresh();
+      if (user) {
+        router.refresh();
+      }
+      onSuccess?.();
     },
     onError: (error) => {
-      console.error("Update failed:", error);
-      toast.error("Failed to update user. Please try again.");
+      console.error("User form failed:", error);
+      toast.error(
+        user
+          ? "Failed to update user. Please try again."
+          : "Failed to add user. Please try again."
+      );
+      onError?.(error);
     },
   });
 
@@ -56,7 +154,7 @@ export const UserForm: React.FC<UserPageProps> = ({ user }) => {
     <form
       id="user-form"
       onSubmit={handleSubmit(onSubmit)}
-      className="grid gap-4 p-4 max-w-md mx-auto"
+      className="grid gap-4"
     >
       <FormField id="name" label="Name" error={formState.errors.name?.message}>
         <Input id="name" {...register("name")} />
@@ -69,23 +167,6 @@ export const UserForm: React.FC<UserPageProps> = ({ user }) => {
       >
         <Input id="email" {...register("email")} />
       </FormField>
-
-      <div className="flex justify-end">
-        <Button
-          type="submit"
-          form="user-form"
-          disabled={mutation.status === "pending"}
-        >
-          {mutation.status === "pending" ? (
-            <>
-              <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
-              Please wait
-            </>
-          ) : (
-            "Update"
-          )}
-        </Button>
-      </div>
     </form>
   );
 };

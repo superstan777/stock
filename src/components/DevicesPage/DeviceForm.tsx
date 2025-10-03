@@ -16,7 +16,6 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useRouter } from "next/navigation";
 import type {
   DeviceType,
   DeviceUpdate,
@@ -64,7 +63,6 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   onSuccess,
   onError,
 }) => {
-  const router = useRouter();
   const queryClient = useQueryClient();
   const isEditMode = !!device;
 
@@ -111,13 +109,9 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
       queryClient.invalidateQueries({
         queryKey: [deviceType === "computer" ? "computers" : "monitors"],
       });
-      if (device) {
-        router.refresh();
-      }
       onSuccess?.();
     },
     onError: (error) => {
-      console.error("Device form failed:", error);
       toast.error(
         device
           ? "Failed to update device. Please try again."

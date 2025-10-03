@@ -1,3 +1,4 @@
+import React from "react";
 import {
   render,
   screen,
@@ -14,7 +15,16 @@ jest.mock("@/lib/fetchers/devices", () => ({
   updateDevice: jest.fn(),
 }));
 
+jest.mock("@tanstack/react-query", () => {
+  const original = jest.requireActual("@tanstack/react-query");
+  return {
+    ...original,
+    useQuery: jest.fn(),
+  };
+});
+
 import { addDevice, updateDevice } from "@/lib/fetchers/devices";
+import { useQuery } from "@tanstack/react-query";
 
 const renderWithClient = (ui: React.ReactNode) => {
   const queryClient = new QueryClient();
@@ -31,17 +41,23 @@ const mockDevice = {
   install_status: "Deployed" as const,
   created_at: null,
   user_id: "user-1",
+  user_email: "ethan.brown@stock.pl",
 };
 
 describe("DeviceForm", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    // domyślny mock useQuery zwracający pustą listę użytkowników
+    (useQuery as jest.Mock).mockReturnValue({
+      data: [],
+      isLoading: false,
+      isError: false,
+    });
   });
 
-  it("renders form fields in add mode", () => {
+  it("renders form fields when adding a device", () => {
     renderWithClient(
       <DeviceForm
-        mode="add"
         deviceType="computer"
         setIsLoading={jest.fn()}
         onSuccess={jest.fn()}
@@ -55,10 +71,9 @@ describe("DeviceForm", () => {
     expect(screen.getByTestId("install-status-trigger")).toBeInTheDocument();
   });
 
-  it("renders form fields with default values in edit mode", () => {
+  it("renders form fields with default values when editing a device", () => {
     renderWithClient(
       <DeviceForm
-        mode="edit"
         deviceType="computer"
         device={mockDevice}
         setIsLoading={jest.fn()}
@@ -72,10 +87,9 @@ describe("DeviceForm", () => {
     expect(screen.getByDisplayValue("ORD001")).toBeInTheDocument();
   });
 
-  it("validates required fields", async () => {
+  it("validates required fields when adding a device", async () => {
     renderWithClient(
       <DeviceForm
-        mode="add"
         deviceType="computer"
         setIsLoading={jest.fn()}
         onSuccess={jest.fn()}
@@ -94,10 +108,9 @@ describe("DeviceForm", () => {
     });
   });
 
-  it("validates user_id when install_status is Deployed", async () => {
+  it("validates user_email when install_status is Deployed", async () => {
     renderWithClient(
       <DeviceForm
-        mode="add"
         deviceType="computer"
         setIsLoading={jest.fn()}
         onSuccess={jest.fn()}
@@ -105,7 +118,6 @@ describe("DeviceForm", () => {
       />
     );
 
-    // wybieramy Deployed w select
     const selectTrigger = screen.getByTestId("install-status-trigger");
     fireEvent.click(selectTrigger);
 
@@ -120,15 +132,13 @@ describe("DeviceForm", () => {
     });
   });
 
-  it("submits addDevice in add mode", async () => {
+  it("calls addDevice when no device is passed", async () => {
     (addDevice as jest.Mock).mockResolvedValueOnce({});
-
     const setIsLoading = jest.fn();
     const onSuccess = jest.fn();
 
     renderWithClient(
       <DeviceForm
-        mode="add"
         deviceType="computer"
         setIsLoading={setIsLoading}
         onSuccess={onSuccess}
@@ -148,61 +158,56 @@ describe("DeviceForm", () => {
         model: "HP",
         order_id: "ORDER-9",
         install_status: "In inventory",
-        user_id: null, // 👈 dodane
-      });
-      expect(onSuccess).toHaveBeenCalled();
-    });
-  });
-
-  it("submits updateDevice in edit mode (hotfix) with non-Deployed status", async () => {
-    (updateDevice as jest.Mock).mockResolvedValueOnce({});
-    const onSuccess = jest.fn();
-
-    // Tworzymy mockDevice ze statusem innym niż Deployed
-    const deviceWithDisposedStatus = {
-      ...mockDevice,
-      install_status: "Disposed" as const,
-      user_id: null,
-    };
-
-    renderWithClient(
-      <DeviceForm
-        mode="edit"
-        deviceType="computer"
-        device={deviceWithDisposedStatus}
-        setIsLoading={jest.fn()}
-        onSuccess={onSuccess}
-        onError={jest.fn()}
-      />
-    );
-
-    // Zmień tylko model
-    const modelInput = screen.getByLabelText(/Model/i);
-    await userEvent.clear(modelInput);
-    await userEvent.type(modelInput, "Lenovo");
-
-    // Submit formularza
-    fireEvent.submit(screen.getByRole("form"));
-
-    await waitFor(() => {
-      expect(updateDevice).toHaveBeenCalledWith("computer", "1", {
-        model: "Lenovo",
-        order_id: "ORD001",
-        install_status: "Disposed",
         user_id: null,
       });
       expect(onSuccess).toHaveBeenCalled();
     });
   });
 
-  it("calls onError when request fails", async () => {
-    (addDevice as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
+  it("calls updateDevice when device is passed", async () => {
+    (updateDevice as jest.Mock).mockResolvedValueOnce({});
+    const onSuccess = jest.fn();
 
+    // mock useQuery aby zwrócić użytkownika
+    (useQuery as jest.Mock).mockReturnValue({
+      data: [{ id: "user-1", email: "ethan.brown@stock.pl" }],
+      isLoading: false,
+      isError: false,
+    });
+
+    renderWithClient(
+      <DeviceForm
+        deviceType="computer"
+        device={{ ...mockDevice, user_email: "ethan.brown@stock.pl" }}
+        setIsLoading={jest.fn()}
+        onSuccess={onSuccess}
+        onError={jest.fn()}
+      />
+    );
+
+    const modelInput = screen.getByLabelText(/Model/i);
+    await userEvent.clear(modelInput);
+    await userEvent.type(modelInput, "Lenovo");
+
+    fireEvent.submit(screen.getByRole("form"));
+
+    await waitFor(() => {
+      expect(updateDevice).toHaveBeenCalledWith("computer", "1", {
+        model: "Lenovo",
+        order_id: "ORD001",
+        install_status: "Deployed",
+        user_id: "user-1",
+      });
+      expect(onSuccess).toHaveBeenCalled();
+    });
+  });
+
+  it("calls onError when addDevice fails", async () => {
+    (addDevice as jest.Mock).mockRejectedValueOnce(new Error("Network error"));
     const onError = jest.fn();
 
     renderWithClient(
       <DeviceForm
-        mode="add"
         deviceType="computer"
         setIsLoading={jest.fn()}
         onSuccess={jest.fn()}

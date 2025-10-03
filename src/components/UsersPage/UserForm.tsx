@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRouter } from "next/navigation";
 import { z } from "zod";
 import { toast } from "sonner";
 
@@ -34,7 +33,6 @@ export const UserForm: React.FC<UserFormProps> = ({
   onSuccess,
   onError,
 }) => {
-  const router = useRouter();
   const queryClient = useQueryClient();
 
   const { handleSubmit, register, formState } = useForm<UserFormData>({
@@ -57,13 +55,10 @@ export const UserForm: React.FC<UserFormProps> = ({
     onSuccess: () => {
       toast.success(user ? "User has been updated" : "User has been added");
       queryClient.invalidateQueries({ queryKey: ["users"] });
-      if (user) {
-        router.refresh();
-      }
+
       onSuccess?.();
     },
     onError: (error) => {
-      console.error("User form failed:", error);
       toast.error(
         user
           ? "Failed to update user. Please try again."

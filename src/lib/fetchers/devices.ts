@@ -3,6 +3,7 @@ import type {
   DeviceRow,
   DeviceInsert,
   DeviceUpdate,
+  DeviceForTable,
 } from "@/lib/types/devices";
 import type { ComputerFilterKeyType, MonitorFilterKeyType } from "../constants";
 
@@ -16,7 +17,7 @@ export const getDevices = async (
     page?: number;
     perPage?: number;
   }
-): Promise<{ data: DeviceRow[]; count: number }> => {
+): Promise<{ data: DeviceForTable[]; count: number }> => {
   const params = new URLSearchParams();
   if (options?.page) params.set("page", String(options.page));
   if (options?.perPage) params.set("perPage", String(options.perPage));

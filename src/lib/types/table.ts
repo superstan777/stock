@@ -1,5 +1,5 @@
 import type { UserRow } from "./users";
-import type { DeviceRow, DeviceForTable } from "./devices";
+import type { DeviceForTable } from "./devices";
 import type { TicketRow } from "./tickets";
 
 export interface ColumnOption {

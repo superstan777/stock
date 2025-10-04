@@ -20,6 +20,15 @@ import type {
   EntityDataMap,
 } from "@/lib/types/table";
 
+function getNestedValue(obj: any, path: string): any {
+  return path.split(".").reduce((acc, key) => {
+    if (acc && typeof acc === "object" && key in acc) {
+      return acc[key];
+    }
+    return undefined;
+  }, obj);
+}
+
 interface DataTableProps<T extends EntityType> {
   data: EntityDataMap[T][] | undefined;
   isLoading: boolean;
@@ -54,7 +63,7 @@ export function DataTable<T extends EntityType>({
   };
 
   const renderCellContent = (colValue: string, row: EntityData<T>) => {
-    const value = row[colValue as keyof typeof row];
+    const value = getNestedValue(row, colValue);
 
     if (colValue === clickableField) {
       return (
@@ -64,7 +73,7 @@ export function DataTable<T extends EntityType>({
           onClick={() => handleCellClick(row)}
           className="p-0 justify-start"
         >
-          {value as React.ReactNode}
+          {value ?? <span className="text-gray-400">None</span>}
         </Button>
       );
     }

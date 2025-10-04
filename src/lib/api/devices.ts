@@ -8,7 +8,8 @@ import type {
   DeviceWithUser,
   DeviceForTable,
 } from "../types/devices";
-import type { ComputerFilterKeyType, MonitorFilterKeyType } from "../constants";
+import type { ComputerFilterKeyType } from "../consts/computers";
+import type { MonitorFilterKeyType } from "../consts/monitors";
 
 const supabase = createClient();
 
@@ -34,7 +35,7 @@ export const getDevices = async (
       model,
       order_id,
       install_status,
-      user:users(email)
+      user:users(id, email)
     `,
       { count: "exact" }
     )
@@ -60,14 +61,11 @@ export const getDevices = async (
   const mappedData: DeviceForTable[] = (data as DeviceWithUser[]).map(
     ({ user, ...device }) => ({
       ...device,
-      user_email: user?.email ?? null,
+      user: user ? { id: user.id, email: user.email } : null,
     })
   );
 
-  return {
-    data: mappedData,
-    count: count ?? 0,
-  };
+  return { data: mappedData, count: count ?? 0 };
 };
 
 export const addDevice = async (
@@ -125,7 +123,7 @@ export const getUserDevices = async (
       model,
       order_id,
       install_status,
-      user:users(email)
+      user:users(id, email)
     `
     )
     .eq("user_id", userId)
@@ -135,7 +133,7 @@ export const getUserDevices = async (
 
   return (data as DeviceWithUser[]).map(({ user, ...device }) => ({
     ...device,
-    user_email: user?.email ?? null,
+    user: user ? { id: user.id, email: user.email } : null,
   }));
 };
 
@@ -154,20 +152,19 @@ export const getDevice = async (
       model,
       order_id,
       install_status,
-      user:users(email)
+      user:users(id, email)
     `
     )
     .eq("id", id)
-    .single(); // pobieramy tylko jeden rekord
+    .single();
 
   if (error) throw error;
-
   if (!data) return null;
 
   const { user, ...device } = data as DeviceWithUser;
 
   return {
     ...device,
-    user_email: user?.email ?? null,
+    user: user ? { id: user.id, email: user.email } : null,
   };
 };

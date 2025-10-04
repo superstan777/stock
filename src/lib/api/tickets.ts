@@ -6,7 +6,7 @@ import type {
   TicketForTable,
   TicketWithCallerEmail,
 } from "../types/tickets";
-import type { TicketFilterKeyType } from "../constants";
+import type { TicketFilterKeyType } from "../consts/tickets";
 
 const supabase = createClient();
 

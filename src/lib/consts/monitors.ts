@@ -1,0 +1,69 @@
+import type { MonitorRow } from "../types/devices";
+import type { ColumnOption } from "../types/table";
+import { formatLabel } from "../utils";
+import { Constants } from "@/lib/types/supabase";
+import type { InstallStatus } from "../types/devices";
+
+type AllMonitorKeys = keyof MonitorRow;
+export type MonitorFilterKeyType = Exclude<
+  AllMonitorKeys,
+  "id" | "created_at" | "user_id"
+>;
+
+const MONITOR_FILTER_KEYS: Array<MonitorFilterKeyType | "user_email"> = [
+  "serial_number",
+  "model",
+  "order_id",
+  "install_status",
+  "user_email",
+];
+
+export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
+  (key) => {
+    if (key === "install_status") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "select",
+        options: Object.values(
+          Constants.public.Enums.install_status
+        ) as InstallStatus[],
+      };
+    }
+
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text",
+    };
+  }
+);
+
+// User Monitors
+
+const USER_MONITORS_FILTER_KEYS: Array<MonitorFilterKeyType> = [
+  "serial_number",
+  "model",
+  "order_id",
+  "install_status",
+];
+
+export const USER_MONITORS_COLUMNS: ColumnOption[] =
+  USER_MONITORS_FILTER_KEYS.map((key) => {
+    if (key === "install_status") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "select",
+        options: Object.values(
+          Constants.public.Enums.install_status
+        ) as InstallStatus[],
+      };
+    }
+
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text",
+    };
+  });

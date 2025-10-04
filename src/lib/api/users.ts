@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/client";
 import type { UserRow, UserInsert, UserUpdate } from "../types/users";
-import type { UserFilterKeyType } from "../constants";
+import type { UserFilterKeyType } from "../consts/users";
 
 const supabase = createClient();
 

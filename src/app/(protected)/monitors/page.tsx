@@ -4,8 +4,8 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
 import { getDevices } from "@/lib/api/devices";
-import { MONITOR_COLUMNS } from "@/lib/constants";
-import type { ComputerFilterKeyType } from "@/lib/constants";
+import { MONITOR_COLUMNS } from "@/lib/consts/monitors";
+import { ComputerFilterKeyType } from "@/lib/consts/computers";
 
 export default function ComputersPage() {
   const searchParams = useSearchParams();

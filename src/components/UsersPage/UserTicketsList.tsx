@@ -2,7 +2,7 @@
 
 import { useQuery } from "@tanstack/react-query";
 import { getUserTickets } from "@/lib/api/tickets";
-import type { TicketRow } from "@/lib/types/tickets";
+import type { TicketForTable, TicketRow } from "@/lib/types/tickets";
 import { DataTable } from "../ListPage/DataTable";
 import { USER_TICKETS_COLUMNS } from "@/lib/constants";
 

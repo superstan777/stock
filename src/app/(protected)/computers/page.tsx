@@ -3,7 +3,7 @@
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
-import { getDevices } from "@/lib/fetchers/devices";
+import { getDevices } from "@/lib/api/devices";
 import { COMPUTER_COLUMNS } from "@/lib/constants";
 import type { ComputerFilterKeyType } from "@/lib/constants";
 
@@ -20,17 +20,10 @@ export default function ComputersPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: [queryKey, currentPage, filter, query],
-    queryFn: () =>
-      getDevices("computer", {
-        filter,
-        query,
-        page: currentPage,
-        perPage: 20,
-      }),
+    queryFn: () => getDevices("computer", filter, query, currentPage),
   });
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
-  console.log(data?.data);
 
   const pages = { current: currentPage, total: totalPages };
 

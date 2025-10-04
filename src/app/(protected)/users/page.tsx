@@ -4,7 +4,7 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
 import { USER_COLUMNS } from "@/lib/constants";
-import { getUsers } from "@/lib/fetchers/users";
+import { getUsers } from "@/lib/api/users";
 import type { UserFilterKeyType } from "@/lib/constants";
 
 export default function UsersPage() {
@@ -18,13 +18,7 @@ export default function UsersPage() {
 
   const { data, isLoading, error } = useQuery({
     queryKey: [queryKey, currentPage, filter, query],
-    queryFn: () =>
-      getUsers({
-        filter,
-        query,
-        page: currentPage,
-        perPage: 20,
-      }),
+    queryFn: () => getUsers(filter, query, currentPage),
   });
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
 

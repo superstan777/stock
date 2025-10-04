@@ -23,7 +23,7 @@ jest.mock("@tanstack/react-query", () => {
   };
 });
 
-import { addDevice, updateDevice } from "@/lib/fetchers/devices";
+import { addDevice, updateDevice } from "@/lib/api/devices";
 import { useQuery } from "@tanstack/react-query";
 
 const renderWithClient = (ui: React.ReactNode) => {

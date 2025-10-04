@@ -3,8 +3,8 @@
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
+import { getTickets } from "@/lib/api/tickets";
 
-import { getTickets } from "@/lib/fetchers/tickets";
 import { TICKET_COLUMNS } from "@/lib/constants";
 import type { TicketFilterKeyType } from "@/lib/constants";
 
@@ -16,19 +16,12 @@ export default function ComputersPage() {
 
   const query = searchParams.get("query") || undefined;
 
-  const queryKey = "monitors";
+  const queryKey = "tickets";
 
   const { data, isLoading, error } = useQuery({
     queryKey: [queryKey, currentPage, filter, query],
-    queryFn: () =>
-      getTickets({
-        filter,
-        query,
-        page: currentPage,
-        perPage: 20,
-      }),
+    queryFn: () => getTickets(filter, query, currentPage),
   });
-  console.log(data);
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
 

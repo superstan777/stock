@@ -10,7 +10,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Constants } from "@/lib/types/supabase";
-import { addDevice, updateDevice } from "@/lib/fetchers/devices";
+import { addDevice, updateDevice } from "@/lib/api/devices";
+
 import { toast } from "sonner";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useForm, Controller } from "react-hook-form";
@@ -25,7 +26,8 @@ import type {
 
 import { UserCombobox } from "./UserCombobox";
 import { useQuery } from "@tanstack/react-query";
-import { getUsers } from "@/lib/fetchers/users";
+import { getUsers } from "@/lib/api/users";
+
 import type { UserRow } from "@/lib/types/users";
 
 const deviceSchema = z

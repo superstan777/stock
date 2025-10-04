@@ -1,6 +1,6 @@
 import type { UserRow } from "./users";
 import type { DeviceForTable } from "./devices";
-import type { TicketRow } from "./tickets";
+import type { TicketForTable, TicketRow } from "./tickets";
 
 export interface ColumnOption {
   value: string;
@@ -15,7 +15,7 @@ export type EntityDataMap = {
   user: UserRow;
   computer: DeviceForTable;
   monitor: DeviceForTable;
-  ticket: TicketRow;
+  ticket: TicketForTable | TicketRow;
 };
 
 export type EntityData<T extends EntityType> = EntityDataMap[T];

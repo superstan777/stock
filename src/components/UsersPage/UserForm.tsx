@@ -7,9 +7,8 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { z } from "zod";
 import { toast } from "sonner";
-
 import { addUser } from "@/lib/api/users";
-import { updateUser } from "@/lib/fetchers/users";
+import { updateUser } from "@/lib/api/users";
 
 import type { UserRow, UserUpdate } from "@/lib/types/users";
 

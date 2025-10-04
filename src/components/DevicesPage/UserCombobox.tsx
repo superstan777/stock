@@ -18,7 +18,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getUsers } from "@/lib/fetchers/users";
+import { getUsers } from "@/lib/api/users";
 import type { UserRow } from "@/lib/types/users";
 
 interface UserComboboxProps {

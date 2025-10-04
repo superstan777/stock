@@ -4,7 +4,7 @@ import type {
   TicketInsert,
   TicketUpdate,
   TicketForTable,
-  TicketWithUser,
+  TicketWithCallerEmail,
 } from "../types/tickets";
 import type { TicketFilterKeyType } from "../constants";
 
@@ -43,7 +43,7 @@ export const getTickets = async (
   if (error) throw error;
 
   // Mapowanie caller.email na user_email
-  const mappedData: TicketForTable[] = (data as TicketWithUser[]).map(
+  const mappedData: TicketForTable[] = (data as TicketWithCallerEmail[]).map(
     ({ caller, ...ticket }) => ({
       ...ticket,
       caller_email: caller?.email ?? null,

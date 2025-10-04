@@ -10,7 +10,7 @@ import userEvent from "@testing-library/user-event";
 import { DeviceForm } from "./DeviceForm";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-jest.mock("@/lib/fetchers/devices", () => ({
+jest.mock("@/lib/api/devices", () => ({
   addDevice: jest.fn(),
   updateDevice: jest.fn(),
 }));
@@ -22,6 +22,21 @@ jest.mock("@tanstack/react-query", () => {
     useQuery: jest.fn(),
   };
 });
+
+jest.mock("@/lib/supabase/client", () => ({
+  createClient: jest.fn(() => ({
+    from: jest.fn(() => ({
+      select: jest.fn().mockReturnThis(),
+      eq: jest.fn().mockReturnThis(),
+      order: jest.fn().mockReturnThis(),
+      range: jest.fn().mockReturnThis(),
+      insert: jest.fn().mockReturnThis(),
+      update: jest.fn().mockReturnThis(),
+      delete: jest.fn().mockReturnThis(),
+      single: jest.fn().mockResolvedValue({ data: null, error: null }),
+    })),
+  })),
+}));
 
 import { addDevice, updateDevice } from "@/lib/api/devices";
 import { useQuery } from "@tanstack/react-query";
@@ -47,6 +62,7 @@ const mockDevice = {
 describe("DeviceForm", () => {
   beforeEach(() => {
     jest.clearAllMocks();
+
     // domyślny mock useQuery zwracający pustą listę użytkowników
     (useQuery as jest.Mock).mockReturnValue({
       data: [],

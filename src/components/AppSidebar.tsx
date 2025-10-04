@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { Button } from "./ui/button";
 import {
   Sidebar,
   SidebarContent,
@@ -30,15 +31,20 @@ const navData = [
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   const pathname = usePathname();
+  const router = useRouter();
 
-  const isActive = (url: string) => {
-    return pathname === url || pathname.startsWith(url + "/");
-  };
+  const isActive = (url: string) =>
+    pathname === url || pathname.startsWith(url + "/");
 
   return (
     <Sidebar {...props}>
       <SidebarHeader>
-        <div className="p-2 font-bold">STOCK</div>
+        <button
+          onClick={() => router.push("/")}
+          className="p-2 font-bold text-left cursor-pointer"
+        >
+          STOCK
+        </button>
       </SidebarHeader>
       <SidebarContent>
         {navData.map((group) => (
@@ -47,7 +53,6 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             <SidebarGroupContent>
               <SidebarMenu>
                 {group.items.map((item) => {
-                  // Add ?page=1 for both Computers and Monitors
                   const href =
                     item.url === "/computers" || item.url === "/monitors"
                       ? `${item.url}?page=1`

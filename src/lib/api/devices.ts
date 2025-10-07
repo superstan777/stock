@@ -13,9 +13,8 @@ import type { MonitorFilterKeyType } from "../consts/monitors";
 
 const supabase = createClient();
 
-const getTableName = (deviceType: DeviceType): "computers" | "monitors" => {
-  return deviceType === "computer" ? "computers" : "monitors";
-};
+const getTableName = (deviceType: DeviceType): "computers" | "monitors" =>
+  deviceType === "computer" ? "computers" : "monitors";
 
 export const getDevices = async (
   deviceType: DeviceType,
@@ -26,19 +25,23 @@ export const getDevices = async (
 ): Promise<{ data: DeviceForTable[]; count: number }> => {
   const tableName = getTableName(deviceType);
 
+  const selectUser =
+    filter === "user.email"
+      ? "user:users!inner(id, email)"
+      : "user:users(id, email)";
+
+  const selectFields = `
+    id,
+    serial_number,
+    model,
+    order_id,
+    install_status,
+    ${selectUser}
+  `;
+
   let q = supabase
     .from(tableName)
-    .select(
-      `
-      id,
-      serial_number,
-      model,
-      order_id,
-      install_status,
-      user:users(id, email)
-    `,
-      { count: "exact" }
-    )
+    .select(selectFields, { count: "exact" })
     .order("serial_number", { ascending: true });
 
   if (filter && query) {
@@ -56,14 +59,16 @@ export const getDevices = async (
   q = q.range(from, to);
 
   const { data, count, error } = await q;
-  if (error) throw error;
 
-  const mappedData: DeviceForTable[] = (data as DeviceWithUser[]).map(
-    ({ user, ...device }) => ({
-      ...device,
-      user: user ? { id: user.id, email: user.email } : null,
-    })
-  );
+  if (error) throw error;
+  if (!data) return { data: [], count: 0 };
+
+  const typedData = data as unknown as DeviceWithUser[];
+
+  const mappedData: DeviceForTable[] = typedData.map(({ user, ...device }) => ({
+    ...device,
+    user: user ? { id: user.id, email: user.email } : null,
+  }));
 
   return { data: mappedData, count: count ?? 0 };
 };

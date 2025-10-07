@@ -44,9 +44,9 @@ export const FormDialog = <T extends EntityType>({
   const open = isControlled ? controlledOpen : internalOpen;
   const setOpen = isControlled ? controlledOnOpenChange! : setInternalOpen;
 
-  const title = `Add ${entity}`;
+  const title = `Create ${entity}`;
   const description = `Create new ${entity} in database`;
-  const submitText = `Add ${entity}`;
+  const submitText = `Create ${entity}`;
 
   const handleOpenChange = (value: boolean) => {
     setOpen(value);

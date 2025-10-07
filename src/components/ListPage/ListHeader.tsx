@@ -29,7 +29,7 @@ export const ListHeader: React.FC<ListHeaderProps> = ({ entity, columns }) => {
         entity={entity}
         trigger={
           <Button className="inline-flex items-center gap-2">
-            Add {entity}
+            Create {entity}
           </Button>
         }
       />

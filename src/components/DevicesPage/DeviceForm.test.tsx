@@ -91,7 +91,10 @@ describe("DeviceForm", () => {
     renderWithClient(
       <DeviceForm
         deviceType="computer"
-        device={mockDevice}
+        device={{
+          ...mockDevice,
+          user: { id: "user-1", email: "ethan.brown@stock.pl" },
+        }}
         setIsLoading={jest.fn()}
         onSuccess={jest.fn()}
         onError={jest.fn()}
@@ -194,7 +197,10 @@ describe("DeviceForm", () => {
     renderWithClient(
       <DeviceForm
         deviceType="computer"
-        device={{ ...mockDevice, user_email: "ethan.brown@stock.pl" }}
+        device={{
+          ...mockDevice,
+          user: { id: "user-1", email: "ethan.brown@stock.pl" },
+        }}
         setIsLoading={jest.fn()}
         onSuccess={onSuccess}
         onError={jest.fn()}

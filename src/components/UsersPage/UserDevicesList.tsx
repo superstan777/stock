@@ -4,7 +4,8 @@ import { useQuery } from "@tanstack/react-query";
 import { getUserDevices } from "@/lib/api/devices";
 import type { DeviceForTable, DeviceType } from "@/lib/types/devices";
 import { DataTable } from "../ListPage/DataTable";
-import { USER_MONITORS_COLUMNS, USER_COMPUTERS_COLUMNS } from "@/lib/constants";
+import { USER_COMPUTERS_COLUMNS } from "@/lib/consts/computers";
+import { USER_MONITORS_COLUMNS } from "@/lib/consts/monitors";
 
 interface UserDevicesListProps {
   userId: string;

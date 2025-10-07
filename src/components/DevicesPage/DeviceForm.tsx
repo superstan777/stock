@@ -76,7 +76,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         model: device?.model ?? "",
         order_id: device?.order_id ?? "",
         install_status: device?.install_status ?? "In inventory",
-        user_email: device?.user_email ?? null,
+        user_email: device?.user?.email ?? null,
       },
     });
 

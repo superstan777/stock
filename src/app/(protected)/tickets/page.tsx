@@ -5,8 +5,8 @@ import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
 import { getTickets } from "@/lib/api/tickets";
 
-import { TICKET_COLUMNS } from "@/lib/constants";
-import type { TicketFilterKeyType } from "@/lib/constants";
+import { TICKET_COLUMNS } from "@/lib/consts/tickets";
+import { TicketFilterKeyType } from "@/lib/consts/tickets";
 
 export default function ComputersPage() {
   const searchParams = useSearchParams();

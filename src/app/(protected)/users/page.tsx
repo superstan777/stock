@@ -3,9 +3,10 @@
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
-import { USER_COLUMNS } from "@/lib/constants";
+import { USER_COLUMNS } from "@/lib/consts/users";
+
 import { getUsers } from "@/lib/api/users";
-import type { UserFilterKeyType } from "@/lib/constants";
+import type { UserFilterKeyType } from "@/lib/consts/users";
 
 export default function UsersPage() {
   const searchParams = useSearchParams();

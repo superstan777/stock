@@ -4,10 +4,9 @@ export type TicketRow = Database["public"]["Tables"]["tickets"]["Row"];
 export type TicketInsert = Database["public"]["Tables"]["tickets"]["Insert"];
 export type TicketUpdate = Database["public"]["Tables"]["tickets"]["Update"];
 
-export type TicketWithCallerEmail = Omit<TicketRow, "caller_id"> & {
-  caller: { email: string | null } | null;
+export type TicketWithUsers = Omit<TicketRow, "caller_id" | "assigned_to"> & {
+  caller: { id: string; email: string | null } | null;
+  assigned_to: { id: string; email: string | null } | null;
 };
 
-export type TicketForTable = Omit<TicketWithCallerEmail, "caller"> & {
-  caller_email: string | null;
-};
+export type TicketForTable = TicketWithUsers;

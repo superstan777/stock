@@ -34,7 +34,6 @@ export default function ComputersPage() {
       tableData={data?.data}
       isLoading={isLoading}
       error={error}
-      clickableField="number"
       pages={pages}
     />
   );

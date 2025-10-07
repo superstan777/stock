@@ -32,7 +32,7 @@ export default function UsersPage() {
       tableData={data?.data}
       isLoading={isLoading}
       error={error}
-      clickableField="name"
+      clickableFields={["name"]}
       pages={pages}
     />
   );

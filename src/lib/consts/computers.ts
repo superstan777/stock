@@ -31,6 +31,26 @@ export const COMPUTER_COLUMNS: ColumnOption[] = COMPUTER_FILTER_KEYS.map(
       };
     }
 
+    if (key === "serial_number") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "text",
+        route: "computers",
+        routeIdPath: "id",
+      };
+    }
+
+    if (key === "user.email") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "text",
+        route: "users",
+        routeIdPath: "user.id",
+      };
+    }
+
     return {
       value: key,
       label: formatLabel(key),
@@ -58,6 +78,18 @@ export const USER_COMPUTERS_COLUMNS: ColumnOption[] =
         options: Object.values(
           Constants.public.Enums.install_status
         ) as InstallStatus[],
+      };
+    }
+
+    // serial_number jako klikalne w kontekście user
+    if (key === "serial_number") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "text",
+        clickable: true,
+        route: "computer",
+        routeIdPath: "id",
       };
     }
 

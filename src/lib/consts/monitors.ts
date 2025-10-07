@@ -31,6 +31,26 @@ export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
       };
     }
 
+    if (key === "serial_number") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "text",
+        route: "monitors",
+        routeIdPath: "id",
+      };
+    }
+
+    if (key === "user.email") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "text",
+        route: "users",
+        routeIdPath: "user.id",
+      };
+    }
+
     return {
       value: key,
       label: formatLabel(key),

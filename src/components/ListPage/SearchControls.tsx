@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import {
@@ -48,9 +48,7 @@ export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
   };
 
   const handleClear = () => {
-    setInputValue("");
     const params = new URLSearchParams(searchParams);
-
     params.delete("filter");
     params.delete("query");
     params.set("page", "1");
@@ -66,7 +64,11 @@ export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
     setInputValue(value);
   };
 
-  const hasSomethingToClear = inputValue.trim() !== "";
+  const hasSomethingToClear = useMemo(() => {
+    const filter = searchParams.get("filter");
+    const query = searchParams.get("query");
+    return Boolean(filter && query);
+  }, [searchParams]);
 
   const selectedColumn = columns.find((col) => col.value === selectedFilter);
 
@@ -122,6 +124,7 @@ export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
       <Button onClick={handleSearch} aria-label="Search button">
         Search
       </Button>
+
       <Button
         variant="outline"
         onClick={handleClear}

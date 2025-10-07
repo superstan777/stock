@@ -27,6 +27,8 @@ export default function ComputersPage() {
 
   const pages = { current: currentPage, total: totalPages };
 
+  console.log(data?.data);
+
   return (
     <ListPage
       entity="computer"
@@ -34,7 +36,6 @@ export default function ComputersPage() {
       tableData={data?.data}
       isLoading={isLoading}
       error={error}
-      clickableField="serial_number"
       pages={pages}
     />
   );

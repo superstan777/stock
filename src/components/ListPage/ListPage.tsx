@@ -11,7 +11,7 @@ interface ListPageProps<T extends EntityType> {
   columns: ColumnOption[];
   tableData: EntityData<T>[] | undefined;
   pages: PagesType;
-  clickableField: string;
+  clickableFields?: string[];
   isLoading: boolean;
   error: unknown;
 }
@@ -21,7 +21,6 @@ export default function ListPage<T extends EntityType>({
   columns,
   tableData,
   pages,
-  clickableField,
   isLoading,
   error,
 }: ListPageProps<T>) {
@@ -34,7 +33,6 @@ export default function ListPage<T extends EntityType>({
         isLoading={isLoading}
         error={error}
         columns={columns}
-        clickableField={clickableField}
         entity={entity}
       />
 

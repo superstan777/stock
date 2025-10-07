@@ -7,6 +7,8 @@ export interface ColumnOption {
   label: string;
   type?: "text" | "select";
   options?: string[]; // np. enum values
+  route?: string;
+  routeIdPath?: string;
 }
 
 export type EntityType = "user" | "computer" | "monitor" | "ticket";

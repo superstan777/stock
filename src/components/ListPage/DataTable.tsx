@@ -35,7 +35,6 @@ interface DataTableProps<T extends EntityType> {
   error: unknown;
   columns: ColumnOption[];
   entity: T;
-  clickableField?: string;
 }
 
 export function DataTable<T extends EntityType>({
@@ -44,7 +43,6 @@ export function DataTable<T extends EntityType>({
   error,
   columns,
   entity,
-  clickableField,
 }: DataTableProps<T>) {
   const router = useRouter();
 
@@ -55,22 +53,24 @@ export function DataTable<T extends EntityType>({
     ticket: "tickets",
   };
 
-  const handleCellClick = (row: EntityData<T>) => {
-    const route = entityRoutes[entity];
-    if (row.id && route) {
-      router.push(`/${route}/${row.id}`);
+  const handleCellClick = (row: EntityData<T>, col: ColumnOption) => {
+    const route = col.route ?? entityRoutes[entity];
+    const id = col.routeIdPath ? getNestedValue(row, col.routeIdPath) : row.id;
+
+    if (id && route) {
+      router.push(`/${route}/${id}`);
     }
   };
 
-  const renderCellContent = (colValue: string, row: EntityData<T>) => {
-    const value = getNestedValue(row, colValue);
+  const renderCellContent = (col: ColumnOption, row: EntityData<T>) => {
+    const value = getNestedValue(row, col.value);
 
-    if (colValue === clickableField) {
+    if (col.route) {
       return (
         <Button
           variant="link"
           size="sm"
-          onClick={() => handleCellClick(row)}
+          onClick={() => handleCellClick(row, col)}
           className="p-0 justify-start"
         >
           {value !== null && value !== undefined && value !== "" ? (
@@ -160,7 +160,7 @@ export function DataTable<T extends EntityType>({
             <TableRow key={row.id}>
               {columns.map((col) => (
                 <TableCell key={col.value}>
-                  {renderCellContent(col.value, row)}
+                  {renderCellContent(col, row)}
                 </TableCell>
               ))}
             </TableRow>

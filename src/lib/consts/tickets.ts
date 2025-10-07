@@ -17,11 +17,33 @@ const TICKET_FILTER_KEYS = [
   "assigned_to.email",
 ] as const;
 
-export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => ({
-  value: key,
-  label: formatLabel(key),
-  type: "text",
-}));
+export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => {
+  if (key === "number") {
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text" as const,
+      route: "tickets",
+      routeIdPath: "id",
+    };
+  }
+
+  if (key === "caller.email") {
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text",
+      route: "users",
+      routeIdPath: "caller.id",
+    };
+  }
+
+  return {
+    value: key,
+    label: formatLabel(key),
+    type: "text",
+  };
+});
 
 const USER_TICKETS_FILTER_KEYS: Array<TicketFilterKeyType> = [
   "number",
@@ -30,8 +52,20 @@ const USER_TICKETS_FILTER_KEYS: Array<TicketFilterKeyType> = [
 ];
 
 export const USER_TICKETS_COLUMNS: ColumnOption[] =
-  USER_TICKETS_FILTER_KEYS.map((key) => ({
-    value: key,
-    label: formatLabel(key),
-    type: "text",
-  }));
+  USER_TICKETS_FILTER_KEYS.map((key) => {
+    if (key === "number") {
+      return {
+        value: key,
+        label: formatLabel(key),
+        type: "text",
+        route: "tickets",
+        routeIdPath: "id",
+      };
+    }
+
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "text",
+    };
+  });

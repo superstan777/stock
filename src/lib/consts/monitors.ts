@@ -10,13 +10,13 @@ export type MonitorFilterKeyType = Exclude<
   "id" | "created_at" | "user_id"
 >;
 
-const MONITOR_FILTER_KEYS: Array<MonitorFilterKeyType | "user_email"> = [
+const MONITOR_FILTER_KEYS = [
   "serial_number",
   "model",
   "order_id",
   "install_status",
-  "user_email",
-];
+  "user.email",
+] as const;
 
 export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
   (key) => {

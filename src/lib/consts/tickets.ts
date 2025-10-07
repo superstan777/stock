@@ -1,20 +1,21 @@
 import type { TicketRow } from "../types/tickets";
-import { formatLabel } from "../utils";
 import type { ColumnOption } from "../types/table";
+import { formatLabel } from "../utils";
 
 type AllTicketKeys = keyof TicketRow;
+
 export type TicketFilterKeyType = Exclude<
   AllTicketKeys,
-  "id" | "created_at" | "description" | "caller_id"
+  "id" | "created_at" | "description" | "caller_id" | "assigned_to"
 >;
 
-const TICKET_FILTER_KEYS: Array<TicketFilterKeyType | "caller_email"> = [
+const TICKET_FILTER_KEYS = [
   "number",
   "title",
-  "caller_email",
   "status",
-  "assigned_to",
-];
+  "caller.email",
+  "assigned_to.email",
+] as const;
 
 export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => ({
   value: key,
@@ -22,13 +23,10 @@ export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => ({
   type: "text",
 }));
 
-// User Tickets
-
 const USER_TICKETS_FILTER_KEYS: Array<TicketFilterKeyType> = [
   "number",
   "title",
   "status",
-  "assigned_to",
 ];
 
 export const USER_TICKETS_COLUMNS: ColumnOption[] =

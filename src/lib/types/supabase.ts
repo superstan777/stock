@@ -184,6 +184,45 @@ export type Database = {
         }
         Relationships: []
       }
+      worknotes: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: string
+          note: string | null
+          ticket_id: string
+        }
+        Insert: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          ticket_id?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          note?: string | null
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worknotes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worknotes_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never

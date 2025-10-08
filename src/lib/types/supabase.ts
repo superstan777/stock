@@ -189,21 +189,21 @@ export type Database = {
           author_id: string
           created_at: string
           id: string
-          note: string | null
+          note: string
           ticket_id: string
         }
         Insert: {
           author_id?: string
           created_at?: string
           id?: string
-          note?: string | null
+          note: string
           ticket_id?: string
         }
         Update: {
           author_id?: string
           created_at?: string
           id?: string
-          note?: string | null
+          note?: string
           ticket_id?: string
         }
         Relationships: [

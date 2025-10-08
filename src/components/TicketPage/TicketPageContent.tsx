@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Loader2Icon } from "lucide-react";
 
 import type { TicketWithUsers } from "@/lib/types/tickets";
+import { WorknotesSection } from "./WorknotesSection";
 
 export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
   const [isLoading, setIsLoading] = useState(false);
@@ -27,6 +28,7 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
       </div>
 
       <TicketForm ticket={ticket} setIsLoading={setIsLoading} />
+      <WorknotesSection ticketId={ticket.id} />
     </div>
   );
 }

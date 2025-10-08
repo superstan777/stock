@@ -176,7 +176,7 @@ describe("DeviceForm", () => {
         serial_number: "SN123",
         model: "HP",
         order_id: "ORDER-9",
-        install_status: "In inventory",
+        install_status: "In Inventory",
         user_id: null,
       });
       expect(onSuccess).toHaveBeenCalled();

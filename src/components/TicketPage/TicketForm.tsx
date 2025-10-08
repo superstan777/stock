@@ -20,7 +20,7 @@ import type { UserRow } from "@/lib/types/users";
 import { getUsers } from "@/lib/api/users";
 import { updateTicket } from "@/lib/api/tickets"; // <- zrobimy taki endpoint analogiczny jak updateDevice
 import type { TicketWithUsers } from "@/lib/types/tickets";
-
+import { Constants } from "@/lib/types/supabase";
 import { UserCombobox } from "../DevicesPage/UserCombobox";
 
 // --- Schema ---
@@ -143,10 +143,11 @@ export const TicketForm: React.FC<TicketFormProps> = ({
                   <SelectValue placeholder="Select status" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="new">New</SelectItem>
-                  <SelectItem value="in_progress">In progress</SelectItem>
-                  <SelectItem value="resolved">Resolved</SelectItem>
-                  <SelectItem value="closed">Closed</SelectItem>
+                  {Constants.public.Enums.ticket_status.map((status) => (
+                    <SelectItem key={status} value={status}>
+                      {status}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             )}

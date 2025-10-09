@@ -18,6 +18,7 @@ import { UserForm } from "../UsersPage/UserForm";
 
 import { DeviceForm } from "../DevicesPage/DeviceForm";
 import type { EntityType } from "@/lib/types/table";
+import { AddTicketForm } from "../TicketPage/AddTicketForm";
 
 interface FormDialogProps<T extends EntityType> {
   entity: T;
@@ -96,6 +97,13 @@ export const FormDialog = <T extends EntityType>({
         {/* UserForm - add-only */}
         {entity === "user" && (
           <UserForm
+            setIsLoading={setIsLoading}
+            onSuccess={handleSuccess}
+            onError={handleError}
+          />
+        )}
+        {entity === "ticket" && (
+          <AddTicketForm
             setIsLoading={setIsLoading}
             onSuccess={handleSuccess}
             onError={handleError}

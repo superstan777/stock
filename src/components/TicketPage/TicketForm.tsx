@@ -20,7 +20,7 @@ const ticketSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().trim().min(1, "Description is required"),
   status: z.string().trim().min(1, "Status is required"),
-  assigned_to: z.email().nullable().optional(),
+  assigned_to: z.uuid("Invalid user").nullable(),
 });
 
 type TicketFormData = z.infer<typeof ticketSchema>;
@@ -43,9 +43,11 @@ export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
       title: ticket.title ?? "",
       description: ticket.description ?? "",
       status: ticket.status ?? "new",
-      assigned_to: ticket.assigned_to?.email ?? null,
+      assigned_to: ticket.assigned_to?.id ?? null,
     },
   });
+
+  console.log(ticket);
 
   return (
     <form

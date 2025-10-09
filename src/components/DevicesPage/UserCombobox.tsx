@@ -22,7 +22,7 @@ import { getUsers } from "@/lib/api/users";
 import type { UserRow } from "@/lib/types/users";
 
 interface UserComboboxProps {
-  value: string | null;
+  value: string | null; // UUID
   onChange: (value: string | null) => void;
 }
 
@@ -38,7 +38,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
     },
   });
 
-  const displayValue = value ?? undefined;
+  const selectedUser = users.find((user) => user.id === value);
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -50,12 +50,12 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
           aria-expanded={open}
           className="w-full justify-between"
         >
-          {displayValue ? (
-            displayValue
-          ) : isLoading ? (
+          {isLoading ? (
             <span className="flex items-center">
               <Loader2Icon className="animate-spin mr-2 h-4 w-4" /> Loading...
             </span>
+          ) : selectedUser ? (
+            selectedUser.email
           ) : (
             "Select user..."
           )}
@@ -80,9 +80,9 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
               {users.map((user) => (
                 <CommandItem
                   key={user.id}
-                  value={user.email}
-                  onSelect={(currentValue) => {
-                    onChange(currentValue);
+                  value={user.id}
+                  onSelect={() => {
+                    onChange(user.id); // przekazujemy UUID
                     setOpen(false);
                   }}
                 >
@@ -90,7 +90,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === user.email ? "opacity-100" : "opacity-0"
+                      value === user.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

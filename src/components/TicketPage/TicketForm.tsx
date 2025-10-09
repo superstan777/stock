@@ -31,16 +31,12 @@ export interface TicketFormProps {
   onSubmit: (data: TicketFormData) => void;
 }
 
-export const TicketForm: React.FC<TicketFormProps> = ({
-  ticket,
-  setIsLoading,
-  onSubmit,
-}) => {
+export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
   const {
     handleSubmit,
     control,
     register,
-    formState: { errors, isSubmitting },
+    formState: { errors },
   } = useForm<TicketFormData>({
     resolver: zodResolver(ticketSchema),
     defaultValues: {

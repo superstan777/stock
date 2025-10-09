@@ -10,7 +10,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { updateTicket } from "@/lib/api/tickets";
 import { addWorknote } from "@/lib/api/worknotes";
 import { getUsers } from "@/lib/api/users";
-import type { TicketWithUsers } from "@/lib/types/tickets";
+import type { TicketUpdate, TicketWithUsers } from "@/lib/types/tickets";
 import type { UserRow } from "@/lib/types/users";
 
 export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
@@ -28,7 +28,9 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
   });
 
   const mutation = useMutation({
-    mutationFn: async (formData: any) => {
+    mutationFn: async (formData: TicketUpdate) => {
+      console.log(formData, "form data");
+
       if (!worknote.trim()) {
         throw new Error("Worknote is required when updating a ticket");
       }
@@ -56,7 +58,7 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["worknotes", ticket.id] });
     },
-    onError: (error: any) => {
+    onError: (error) => {
       toast.error(error.message || "Failed to update ticket");
     },
   });

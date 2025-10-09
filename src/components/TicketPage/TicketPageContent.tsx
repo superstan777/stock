@@ -6,12 +6,11 @@ import { WorknotesSection } from "./WorknotesSection";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon } from "lucide-react";
 import { toast } from "sonner";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { updateTicket } from "@/lib/api/tickets";
 import { addWorknote } from "@/lib/api/worknotes";
-import { getUsers } from "@/lib/api/users";
+
 import type { TicketUpdate, TicketWithUsers } from "@/lib/types/tickets";
-import type { UserRow } from "@/lib/types/users";
 
 export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
   const [isLoading, setIsLoading] = useState(false);

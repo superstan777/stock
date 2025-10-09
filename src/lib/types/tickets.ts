@@ -8,5 +8,3 @@ export type TicketWithUsers = Omit<TicketRow, "caller_id" | "assigned_to"> & {
   caller: { id: string; email: string | null } | null;
   assigned_to: { id: string; email: string | null } | null;
 };
-
-export type TicketForTable = TicketWithUsers;

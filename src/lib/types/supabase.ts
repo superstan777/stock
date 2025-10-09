@@ -184,6 +184,45 @@ export type Database = {
         }
         Relationships: []
       }
+      worknotes: {
+        Row: {
+          author_id: string
+          created_at: string
+          id: string
+          note: string
+          ticket_id: string
+        }
+        Insert: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          note: string
+          ticket_id?: string
+        }
+        Update: {
+          author_id?: string
+          created_at?: string
+          id?: string
+          note?: string
+          ticket_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "worknotes_author_id_fkey"
+            columns: ["author_id"]
+            isOneToOne: false
+            referencedRelation: "users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "worknotes_ticket_id_fkey"
+            columns: ["ticket_id"]
+            isOneToOne: false
+            referencedRelation: "tickets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
@@ -192,7 +231,13 @@ export type Database = {
       [_ in never]: never
     }
     Enums: {
-      install_status: "Deployed" | "In inventory" | "End of life" | "Disposed"
+      install_status: "Deployed" | "In Inventory" | "End of Life" | "Disposed"
+      ticket_status:
+        | "New"
+        | "In Progress"
+        | "On Hold"
+        | "Resolved"
+        | "Cancelled"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -323,7 +368,8 @@ export const Constants = {
   },
   public: {
     Enums: {
-      install_status: ["Deployed", "In inventory", "End of life", "Disposed"],
+      install_status: ["Deployed", "In Inventory", "End of Life", "Disposed"],
+      ticket_status: ["New", "In Progress", "On Hold", "Resolved", "Cancelled"],
     },
   },
 } as const

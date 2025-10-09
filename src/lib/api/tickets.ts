@@ -4,7 +4,6 @@ import type {
   TicketRow,
   TicketInsert,
   TicketUpdate,
-  TicketForTable,
   TicketWithUsers,
 } from "../types/tickets";
 import type { TicketFilterKeyType } from "../consts/tickets";
@@ -16,8 +15,7 @@ export const getTickets = async (
   query?: string,
   page: number = 1,
   perPage: number = 20
-): Promise<{ data: TicketForTable[]; count: number }> => {
-  // wybieramy pola oraz aliasy do users; używamy dedykowanych relacji (kluczy FK)
+): Promise<{ data: TicketWithUsers[]; count: number }> => {
   const selectCaller =
     filter === "caller.email"
       ? "caller:users!tickets_caller_id_fkey!inner(id,email)"
@@ -45,15 +43,10 @@ export const getTickets = async (
     .order("title", { ascending: true });
 
   if (filter && query) {
-    // specjalne traktowanie pola number (bigint)
     if (filter === "number") {
-      // jeśli query to tylko cyfry -> equality (dokładne dopasowanie)
       if (/^\d+$/.test(query)) {
         q = q.eq("number", Number(query));
       } else {
-        // jeżeli chcesz wspierać wyszukiwanie prefiksowe po numerze (np. "12" -> 123, 124),
-        // rzutujemy kolumnę na tekst i używamy ilike
-        // (PostgREST / supabase akceptuje 'number::text' jako nazwę pola)
         q = q.ilike("number::text", `${query}%`);
       }
     } else if (filter === "caller.email") {
@@ -65,7 +58,6 @@ export const getTickets = async (
     }
   }
 
-  // paginacja
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
   q = q.range(from, to);
@@ -76,8 +68,7 @@ export const getTickets = async (
 
   const typedData = data as unknown as TicketWithUsers[];
 
-  // mapujemy aliasy caller/assigned_to do struktury TicketForTable
-  const mappedData: TicketForTable[] = typedData.map(
+  const mappedData: TicketWithUsers[] = typedData.map(
     ({ caller, assigned_to, ...ticket }) => ({
       ...ticket,
       caller: caller ? { id: caller.id, email: caller.email } : null,
@@ -88,6 +79,40 @@ export const getTickets = async (
   );
 
   return { data: mappedData, count: count ?? 0 };
+};
+
+export const getTicket = async (
+  id: string
+): Promise<TicketWithUsers | null> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select(
+      `
+      id,
+      number,
+      title,
+      description,
+      status,
+      created_at,
+      caller:users!tickets_caller_id_fkey(id,email),
+      assigned_to:users!tickets_assigned_to_fkey(id,email)
+    `
+    )
+    .eq("id", id)
+    .single();
+
+  if (error) throw error;
+  if (!data) return null;
+
+  const { caller, assigned_to, ...ticket } = data as unknown as TicketWithUsers;
+
+  return {
+    ...ticket,
+    caller: caller ? { id: caller.id, email: caller.email } : null,
+    assigned_to: assigned_to
+      ? { id: assigned_to.id, email: assigned_to.email }
+      : null,
+  };
 };
 
 export const addTicket = async (ticket: TicketInsert): Promise<TicketRow[]> => {

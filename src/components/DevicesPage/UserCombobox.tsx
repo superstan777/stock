@@ -28,7 +28,7 @@ interface UserComboboxProps {
 
 export function UserCombobox({ value, onChange }: UserComboboxProps) {
   const [open, setOpen] = React.useState(false);
-  const triggerRef = React.useRef<HTMLButtonElement>(null);
+  const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
   const { data: users = [], isLoading } = useQuery<UserRow[]>({
     queryKey: ["users"],
@@ -38,7 +38,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
     },
   });
 
-  const selectedUser = users.find((user) => user.id === value);
+  const selectedUser = users.find((u) => u.id === value) ?? null;
 
   return (
     <Popover open={open} onOpenChange={setOpen}>
@@ -65,13 +65,10 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
 
       <PopoverContent
         className="p-0"
-        style={{ width: triggerRef.current?.offsetWidth }}
+        style={{ width: triggerRef.current?.offsetWidth ?? 260 }}
       >
         <Command>
-          <CommandInput
-            placeholder="Search by email..."
-            className="h-9 w-full"
-          />
+          <CommandInput placeholder="Search by email..." className="h-9" />
           <CommandList>
             <CommandEmpty>
               {isLoading ? "Loading..." : "No user found."}
@@ -80,13 +77,13 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
               {users.map((user) => (
                 <CommandItem
                   key={user.id}
-                  value={user.id}
+                  value={user.email}
                   onSelect={() => {
-                    onChange(user.id); // przekazujemy UUID
+                    onChange(user.id);
                     setOpen(false);
                   }}
                 >
-                  {user.email}
+                  <span>{user.email}</span>
                   <Check
                     className={cn(
                       "ml-auto",

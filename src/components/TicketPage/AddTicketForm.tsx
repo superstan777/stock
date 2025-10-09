@@ -48,7 +48,7 @@ export const AddTicketForm: React.FC<AddTicketFormProps> = ({
     mutationFn: (data: TicketFormData) =>
       addTicket({
         ...data,
-        status: "new",
+        status: "New",
       }),
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),

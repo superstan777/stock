@@ -17,6 +17,7 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
   const [isLoading, setIsLoading] = useState(false);
   const [worknote, setWorknote] = useState("");
   const queryClient = useQueryClient();
+  // temporary solution, will be changed after migration to own backend
   const currentUserId = "138ce128-e78d-4998-890b-d064663564ec";
 
   const { data: users = [], isLoading: isUsersLoading } = useQuery<UserRow[]>({
@@ -29,8 +30,6 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
 
   const mutation = useMutation({
     mutationFn: async (formData: TicketUpdate) => {
-      console.log(formData, "form data");
-
       if (!worknote.trim()) {
         throw new Error("Worknote is required when updating a ticket");
       }

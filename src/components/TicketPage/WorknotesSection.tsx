@@ -4,6 +4,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorknotes } from "@/lib/api/worknotes";
 import { Worknote } from "./Worknote";
+import { Loader2Icon } from "lucide-react";
 
 type WorknotesSectionProps = {
   ticketId: string;
@@ -40,12 +41,19 @@ export const WorknotesSection: React.FC<WorknotesSectionProps> = ({
         />
       </div>
 
-      {isLoading && <p className="text-sm text-gray-500">Loading...</p>}
+      {isLoading && (
+        <div className="flex justify-center items-center">
+          <Loader2Icon className="animate-spin mr-2 h-4 w-4" />
+          Loading...
+        </div>
+      )}
       {isError && (
-        <p className="text-sm text-red-500">Error loading worknotes</p>
+        <p className="text-sm text-red-500 text-center">
+          Error loading worknotes
+        </p>
       )}
       {!isLoading && worknotes.length === 0 && (
-        <p className="text-sm text-gray-500">No worknotes yet.</p>
+        <p className="text-sm text-gray-500 text-center">No worknotes yet.</p>
       )}
       {!isLoading &&
         worknotes.map((note) => (

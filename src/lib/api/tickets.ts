@@ -4,7 +4,6 @@ import type {
   TicketRow,
   TicketInsert,
   TicketUpdate,
-  TicketForTable,
   TicketWithUsers,
 } from "../types/tickets";
 import type { TicketFilterKeyType } from "../consts/tickets";
@@ -16,7 +15,7 @@ export const getTickets = async (
   query?: string,
   page: number = 1,
   perPage: number = 20
-): Promise<{ data: TicketForTable[]; count: number }> => {
+): Promise<{ data: TicketWithUsers[]; count: number }> => {
   const selectCaller =
     filter === "caller.email"
       ? "caller:users!tickets_caller_id_fkey!inner(id,email)"
@@ -69,7 +68,7 @@ export const getTickets = async (
 
   const typedData = data as unknown as TicketWithUsers[];
 
-  const mappedData: TicketForTable[] = typedData.map(
+  const mappedData: TicketWithUsers[] = typedData.map(
     ({ caller, assigned_to, ...ticket }) => ({
       ...ticket,
       caller: caller ? { id: caller.id, email: caller.email } : null,
@@ -82,7 +81,9 @@ export const getTickets = async (
   return { data: mappedData, count: count ?? 0 };
 };
 
-export const getTicket = async (id: string): Promise<TicketForTable | null> => {
+export const getTicket = async (
+  id: string
+): Promise<TicketWithUsers | null> => {
   const { data, error } = await supabase
     .from("tickets")
     .select(

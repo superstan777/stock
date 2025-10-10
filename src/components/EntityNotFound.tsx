@@ -38,8 +38,8 @@ export const EntityNotFound = () => {
           {singular.charAt(0).toUpperCase() + singular.slice(1)} not found
         </EmptyTitle>
         <EmptyDescription>
-          The {singular.toLowerCase()} you're trying to access does not exist or
-          provided ID is invalid.
+          The {singular.toLowerCase()} you&apos;re trying to access does not
+          exist or provided ID is invalid.
         </EmptyDescription>
       </EmptyHeader>
 

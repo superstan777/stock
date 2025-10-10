@@ -1,5 +1,6 @@
 import { getUser } from "@/lib/api/users";
 import { UserPageContent } from "@/components/UsersPage/UserPageContent";
+import { EntityNotFound } from "@/components/EntityNotFound";
 
 export default async function UserPage({
   params,
@@ -8,11 +9,13 @@ export default async function UserPage({
 }) {
   const { id } = await params;
 
-  if (!id) return <div>No user id provided.</div>;
+  try {
+    const user = await getUser(id);
 
-  const user = await getUser(id);
-
-  if (!user) return <div>User not found.</div>;
-
-  return <UserPageContent user={user} userId={id} />;
+    if (user) {
+      return <UserPageContent user={user} userId={id} />;
+    }
+  } catch (error) {
+    return <EntityNotFound />;
+  }
 }

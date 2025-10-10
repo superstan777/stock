@@ -164,7 +164,6 @@ export const getDevice = async (
     .single();
 
   if (error) throw error;
-  if (!data) return null;
 
   const { user, ...device } = data as DeviceWithUser;
 

@@ -102,7 +102,6 @@ export const getTicket = async (
     .single();
 
   if (error) throw error;
-  if (!data) return null;
 
   const { caller, assigned_to, ...ticket } = data as unknown as TicketWithUsers;
 

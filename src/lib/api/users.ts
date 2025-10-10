@@ -67,5 +67,5 @@ export const getUser = async (id: string): Promise<UserRow | null> => {
 
   if (error) throw error;
 
-  return data ?? null;
+  return data;
 };

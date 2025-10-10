@@ -1,5 +1,6 @@
 import { getTicket } from "@/lib/api/tickets";
 import { TicketPageContent } from "@/components/TicketPage/TicketPageContent";
+import { EntityNotFound } from "@/components/EntityNotFound";
 
 export default async function TicketPage({
   params,
@@ -8,11 +9,13 @@ export default async function TicketPage({
 }) {
   const { id } = await params;
 
-  if (!id) return <div>No ticket id provided.</div>;
+  try {
+    const ticket = await getTicket(id);
 
-  const ticket = await getTicket(id);
-
-  if (!ticket) return <div>Ticket not found.</div>;
-
-  return <TicketPageContent ticket={ticket} />;
+    if (ticket) {
+      return <TicketPageContent ticket={ticket} />;
+    }
+  } catch (error) {
+    return <EntityNotFound />;
+  }
 }

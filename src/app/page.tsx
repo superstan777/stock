@@ -1,6 +1,8 @@
 import { NewTicketsTable } from "@/components/Dashboard/NewTicketsTable";
 import ProtectedLayout from "./(protected)/layout";
 import { ResolvedTicketsSection } from "@/components/Dashboard/ResolvedTicketsSection";
+import { ChartBarDefault } from "@/components/ui/chart-bar-default";
+import { ChartBarMultiple } from "@/components/ui/chart-bar-multiple";
 
 export default function DashboardPage() {
   return (
@@ -9,9 +11,10 @@ export default function DashboardPage() {
         <div className="col-span-2 ">
           <NewTicketsTable />
         </div>
+        <ChartBarDefault />
 
-        <div>current tickets by day</div>
-        <div>assigned to users</div>
+        <ChartBarMultiple />
+
         <div className="col-span-2">
           <ResolvedTicketsSection />
         </div>

@@ -162,3 +162,35 @@ export const getUserTickets = async (
     count: count ?? 0,
   };
 };
+
+export const getNewTickets = async (): Promise<TicketWithUsers[]> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select(
+      `
+      id,
+      number,
+      title,
+      description,
+      status,
+      created_at,
+      caller:users!tickets_caller_id_fkey(id,email),
+      assigned_to:users!tickets_assigned_to_fkey(id,email)
+    `
+    )
+    .eq("status", "New")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  if (!data) return [];
+
+  const typedData = data as unknown as TicketWithUsers[];
+
+  return typedData.map(({ caller, assigned_to, ...ticket }) => ({
+    ...ticket,
+    caller: caller ? { id: caller.id, email: caller.email } : null,
+    assigned_to: assigned_to
+      ? { id: assigned_to.id, email: assigned_to.email }
+      : null,
+  }));
+};

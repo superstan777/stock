@@ -33,6 +33,8 @@ export const getTickets = async (
     description,
     status,
     created_at,
+    estimated_resolution_date,
+    resolution_date
     ${selectCaller},
     ${selectAssigned}
   `;
@@ -94,6 +96,8 @@ export const getTicket = async (
       description,
       status,
       created_at,
+      estimated_resolution_date,
+      resolution_date,
       caller:users!tickets_caller_id_fkey(id,email),
       assigned_to:users!tickets_assigned_to_fkey(id,email)
     `
@@ -174,6 +178,8 @@ export const getNewTickets = async (): Promise<TicketWithUsers[]> => {
       description,
       status,
       created_at,
+      estimated_resolution_date,
+      resolution_date,
       caller:users!tickets_caller_id_fkey(id,email),
       assigned_to:users!tickets_assigned_to_fkey(id,email)
     `

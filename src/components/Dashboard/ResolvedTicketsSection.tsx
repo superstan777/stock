@@ -43,13 +43,15 @@ export const ResolvedTicketsSection = () => {
   }
 
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
+  console.log(data);
 
   return (
     <Card>
-      <CardHeader className="flex flex-col p-6 border-b">
+      <CardHeader className="flex flex-col pb-6 border-b">
         <CardTitle>Resolved Tickets</CardTitle>
         <CardDescription>
-          Tickets resolved in the past 3 months — {total}
+          Tickets resolved in the past 3 months —{" "}
+          <span className="font-semibold text-foreground">{total}</span>
         </CardDescription>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">

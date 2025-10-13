@@ -55,7 +55,15 @@ export const ResolvedTicketsSection = () => {
         </CardDescription>
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
-        <ChartBarInteractive data={data} />
+        <ChartBarInteractive
+          data={data}
+          chartConfig={{
+            count: {
+              label: "Resolved tickets",
+              color: "var(--chart-3)",
+            },
+          }}
+        />
       </CardContent>
     </Card>
   );

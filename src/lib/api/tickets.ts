@@ -226,3 +226,31 @@ export const getResolvedTicketsStats = async (): Promise<
     .sort(([a], [b]) => a.localeCompare(b))
     .map(([date, count]) => ({ date, count }));
 };
+
+export const getOpenTicketsStats = async (): Promise<
+  { date: string; count: number }[]
+> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("estimated_resolution_date, status")
+    .neq("status", "Resolved");
+
+  if (error) throw error;
+
+  const countsByDate: Record<string, number> = {};
+
+  data.forEach((ticket) => {
+    const day = ticket.estimated_resolution_date
+      ? ticket.estimated_resolution_date.slice(0, 10)
+      : "No ETA";
+    countsByDate[day] = (countsByDate[day] || 0) + 1;
+  });
+
+  return Object.entries(countsByDate)
+    .sort(([a], [b]) => {
+      if (a === "No ETA") return -1; // "No ETA" zawsze na początku
+      if (b === "No ETA") return 1;
+      return a.localeCompare(b);
+    })
+    .map(([date, count]) => ({ date, count }));
+};

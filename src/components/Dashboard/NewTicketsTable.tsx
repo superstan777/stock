@@ -4,13 +4,7 @@ import { DataTable } from "@/components/ListPage/DataTable";
 import { useQuery } from "@tanstack/react-query";
 import { getNewTickets } from "@/lib/api/tickets";
 import { TICKET_COLUMNS } from "@/lib/consts/tickets";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const NewTicketsTable = () => {
   const { data, isLoading, error } = useQuery({

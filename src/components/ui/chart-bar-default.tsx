@@ -8,40 +8,45 @@ import {
   ChartTooltipContent,
 } from "@/components/ui/chart";
 
-interface ChartBarDefaultProps {
-  data: Record<string, any>[];
-  chartConfig: ChartConfig;
-  dataKey?: string; // np. "date" lub "operator"
-  tickFormatter?: (value: any) => string;
-  tooltipLabelFormatter?: (value: any) => string;
+export interface ChartBarData {
+  [key: string]: string | number;
 }
 
-export function ChartBarDefault({
+interface ChartBarDefaultProps<T extends ChartBarData> {
+  data: T[];
+  chartConfig: ChartConfig;
+  dataKey?: keyof T;
+  tickFormatter?: (value: string | number) => string;
+  tooltipLabelFormatter?: (value: string | number) => string;
+}
+
+export function ChartBarDefault<T extends ChartBarData>({
   data,
   chartConfig,
-  dataKey = "date",
+  dataKey,
   tickFormatter,
   tooltipLabelFormatter,
-}: ChartBarDefaultProps) {
-  const firstKey = Object.keys(chartConfig)[0];
+}: ChartBarDefaultProps<T>) {
+  const firstKey = Object.keys(chartConfig)[0] as keyof T;
+  const xKey = dataKey || ("date" as keyof T);
 
-  const defaultTickFormatter = (value: any) => {
-    if (dataKey === "date") {
+  const defaultTickFormatter = (value: string | number) => {
+    if (xKey === "date") {
       if (value === "No ETA") return "No ETA";
-      const date = new Date(value);
+      const date = new Date(value as string);
       return isNaN(date.getTime())
-        ? value
+        ? String(value)
         : date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
     }
     return String(value);
   };
 
-  const defaultTooltipLabelFormatter = (value: any) => {
-    if (dataKey === "date") {
+  const defaultTooltipLabelFormatter = (value: string | number) => {
+    if (xKey === "date") {
       if (value === "No ETA") return "No ETA";
-      const date = new Date(value);
+      const date = new Date(value as string);
       return isNaN(date.getTime())
-        ? value
+        ? String(value)
         : date.toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -56,7 +61,7 @@ export function ChartBarDefault({
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <XAxis
-          dataKey={dataKey}
+          dataKey={xKey as string}
           tickLine={false}
           axisLine={false}
           tickMargin={8}
@@ -73,7 +78,11 @@ export function ChartBarDefault({
             />
           }
         />
-        <Bar dataKey={firstKey} fill={`var(--color-${firstKey})`} radius={8} />
+        <Bar
+          dataKey={firstKey as string}
+          fill={`var(--color-${String(firstKey)})`}
+          radius={8}
+        />
       </BarChart>
     </ChartContainer>
   );

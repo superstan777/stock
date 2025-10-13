@@ -15,7 +15,7 @@ import {
 import { ErrorComponent } from "../ErrorComponent";
 import { EmptyComponent } from "../EmptyComponent";
 
-export const ResolvedTicketsSection = () => {
+export const ResolvedTicketsChart = () => {
   const {
     data = [],
     isLoading,
@@ -43,7 +43,6 @@ export const ResolvedTicketsSection = () => {
   }
 
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
-  console.log(data);
 
   return (
     <Card>

@@ -1,8 +1,6 @@
 import { NewTicketsTable } from "@/components/Dashboard/NewTicketsTable";
 import ProtectedLayout from "./(protected)/layout";
-import { ResolvedTicketsSection } from "@/components/Dashboard/ResolvedTicketsSection";
-
-import { ChartBarMultiple } from "@/components/ui/chart-bar-multiple";
+import { ResolvedTicketsChart } from "@/components/Dashboard/ResolvedTicketsChart";
 import { TicketsByDayChart } from "@/components/Dashboard/TicketsByDayChart";
 import { TicketsByOperatorChart } from "@/components/Dashboard/TicketsByOperatorChart";
 
@@ -16,7 +14,7 @@ export default function DashboardPage() {
         <TicketsByDayChart />
         <TicketsByOperatorChart />
         <div className="col-span-2">
-          <ResolvedTicketsSection />
+          <ResolvedTicketsChart />
         </div>
       </div>
     </ProtectedLayout>

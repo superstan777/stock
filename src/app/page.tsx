@@ -4,6 +4,7 @@ import { ResolvedTicketsSection } from "@/components/Dashboard/ResolvedTicketsSe
 
 import { ChartBarMultiple } from "@/components/ui/chart-bar-multiple";
 import { TicketsByDayChart } from "@/components/Dashboard/TicketsByDayChart";
+import { TicketsByOperatorChart } from "@/components/Dashboard/TicketsByOperatorChart";
 
 export default function DashboardPage() {
   return (
@@ -12,11 +13,8 @@ export default function DashboardPage() {
         <div className="col-span-2 ">
           <NewTicketsTable />
         </div>
-        {/* tickety wg dni */}
         <TicketsByDayChart />
-        {/* tickety wg userow */}
-        <ChartBarMultiple />
-
+        <TicketsByOperatorChart />
         <div className="col-span-2">
           <ResolvedTicketsSection />
         </div>

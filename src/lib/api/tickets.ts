@@ -248,9 +248,50 @@ export const getOpenTicketsStats = async (): Promise<
 
   return Object.entries(countsByDate)
     .sort(([a], [b]) => {
-      if (a === "No ETA") return -1; // "No ETA" zawsze na początku
+      if (a === "No ETA") return -1;
       if (b === "No ETA") return 1;
       return a.localeCompare(b);
     })
     .map(([date, count]) => ({ date, count }));
+};
+
+export const getTicketsByOperator = async (): Promise<
+  { operator: { id: string | null; name: string }; count: number }[]
+> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select(
+      `
+      assigned_to:users!tickets_assigned_to_fkey(id, name),
+      status
+    `
+    )
+    .neq("status", "Resolved");
+
+  if (error) throw error;
+
+  const countsByOperator = data.reduce<
+    Record<
+      string,
+      { operator: { id: string | null; name: string }; count: number }
+    >
+  >((acc, ticket) => {
+    const operator = ticket.assigned_to;
+    const key = operator?.id || "unassigned";
+
+    if (!acc[key]) {
+      acc[key] = {
+        operator: {
+          id: operator?.id || null,
+          name: operator?.name || "Unassigned",
+        },
+        count: 0,
+      };
+    }
+
+    acc[key].count += 1;
+    return acc;
+  }, {});
+
+  return Object.values(countsByOperator);
 };

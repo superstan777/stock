@@ -1,7 +1,6 @@
 "use client";
 
 import { Bar, BarChart, CartesianGrid, XAxis } from "recharts";
-
 import {
   ChartConfig,
   ChartContainer,
@@ -12,43 +11,64 @@ import {
 interface ChartBarDefaultProps {
   data: Record<string, any>[];
   chartConfig: ChartConfig;
+  dataKey?: string; // np. "date" lub "operator"
+  tickFormatter?: (value: any) => string;
+  tooltipLabelFormatter?: (value: any) => string;
 }
 
-export function ChartBarDefault({ data, chartConfig }: ChartBarDefaultProps) {
+export function ChartBarDefault({
+  data,
+  chartConfig,
+  dataKey = "date",
+  tickFormatter,
+  tooltipLabelFormatter,
+}: ChartBarDefaultProps) {
   const firstKey = Object.keys(chartConfig)[0];
+
+  const defaultTickFormatter = (value: any) => {
+    if (dataKey === "date") {
+      if (value === "No ETA") return "No ETA";
+      const date = new Date(value);
+      return isNaN(date.getTime())
+        ? value
+        : date.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    }
+    return String(value);
+  };
+
+  const defaultTooltipLabelFormatter = (value: any) => {
+    if (dataKey === "date") {
+      if (value === "No ETA") return "No ETA";
+      const date = new Date(value);
+      return isNaN(date.getTime())
+        ? value
+        : date.toLocaleDateString("en-US", {
+            month: "short",
+            day: "numeric",
+            year: "numeric",
+          });
+    }
+    return String(value);
+  };
 
   return (
     <ChartContainer config={chartConfig}>
       <BarChart accessibilityLayer data={data}>
         <CartesianGrid vertical={false} />
         <XAxis
-          dataKey="date"
+          dataKey={dataKey}
           tickLine={false}
-          tickMargin={10}
           axisLine={false}
+          tickMargin={8}
           minTickGap={32}
-          tickFormatter={(value) => {
-            if (value === "No ETA") return "No ETA";
-            const date = new Date(value);
-            return date.toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-            });
-          }}
+          tickFormatter={tickFormatter || defaultTickFormatter}
         />
         <ChartTooltip
-          cursor={false}
           content={
             <ChartTooltipContent
               hideLabel
-              labelFormatter={(value: string) =>
-                value === "No ETA"
-                  ? "No ETA"
-                  : new Date(value).toLocaleDateString("en-US", {
-                      month: "short",
-                      day: "numeric",
-                      year: "numeric",
-                    })
+              labelFormatter={
+                tooltipLabelFormatter || defaultTooltipLabelFormatter
               }
             />
           }

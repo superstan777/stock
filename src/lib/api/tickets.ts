@@ -200,3 +200,29 @@ export const getNewTickets = async (): Promise<TicketWithUsers[]> => {
       : null,
   }));
 };
+
+export const getResolvedTicketsStats = async (): Promise<
+  { date: string; count: number }[]
+> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("resolution_date")
+    .gte(
+      "resolution_date",
+      new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    )
+    .not("resolution_date", "is", null)
+    .eq("status", "Resolved");
+
+  if (error) throw error;
+
+  const countsByDate = data.reduce<Record<string, number>>((acc, ticket) => {
+    const day = ticket.resolution_date!.slice(0, 10);
+    acc[day] = (acc[day] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.entries(countsByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, count]) => ({ date, count }));
+};

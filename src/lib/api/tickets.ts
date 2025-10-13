@@ -33,6 +33,8 @@ export const getTickets = async (
     description,
     status,
     created_at,
+    estimated_resolution_date,
+    resolution_date
     ${selectCaller},
     ${selectAssigned}
   `;
@@ -94,6 +96,8 @@ export const getTicket = async (
       description,
       status,
       created_at,
+      estimated_resolution_date,
+      resolution_date,
       caller:users!tickets_caller_id_fkey(id,email),
       assigned_to:users!tickets_assigned_to_fkey(id,email)
     `
@@ -161,4 +165,133 @@ export const getUserTickets = async (
     data: (data as TicketRow[]) ?? [],
     count: count ?? 0,
   };
+};
+
+export const getNewTickets = async (): Promise<TicketWithUsers[]> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select(
+      `
+      id,
+      number,
+      title,
+      description,
+      status,
+      created_at,
+      estimated_resolution_date,
+      resolution_date,
+      caller:users!tickets_caller_id_fkey(id,email),
+      assigned_to:users!tickets_assigned_to_fkey(id,email)
+    `
+    )
+    .eq("status", "New")
+    .order("created_at", { ascending: false });
+
+  if (error) throw error;
+  if (!data) return [];
+
+  const typedData = data as unknown as TicketWithUsers[];
+
+  return typedData.map(({ caller, assigned_to, ...ticket }) => ({
+    ...ticket,
+    caller: caller ? { id: caller.id, email: caller.email } : null,
+    assigned_to: assigned_to
+      ? { id: assigned_to.id, email: assigned_to.email }
+      : null,
+  }));
+};
+
+export const getResolvedTicketsStats = async (): Promise<
+  { date: string; count: number }[]
+> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("resolution_date")
+    .gte(
+      "resolution_date",
+      new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString()
+    )
+    .not("resolution_date", "is", null)
+    .eq("status", "Resolved");
+
+  if (error) throw error;
+
+  const countsByDate = data.reduce<Record<string, number>>((acc, ticket) => {
+    const day = ticket.resolution_date!.slice(0, 10);
+    acc[day] = (acc[day] || 0) + 1;
+    return acc;
+  }, {});
+
+  return Object.entries(countsByDate)
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, count]) => ({ date, count }));
+};
+
+export const getOpenTicketsStats = async (): Promise<
+  { date: string; count: number }[]
+> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select("estimated_resolution_date, status")
+    .neq("status", "Resolved");
+
+  if (error) throw error;
+
+  const countsByDate: Record<string, number> = {};
+
+  data.forEach((ticket) => {
+    const day = ticket.estimated_resolution_date
+      ? ticket.estimated_resolution_date.slice(0, 10)
+      : "No ETA";
+    countsByDate[day] = (countsByDate[day] || 0) + 1;
+  });
+
+  return Object.entries(countsByDate)
+    .sort(([a], [b]) => {
+      if (a === "No ETA") return -1;
+      if (b === "No ETA") return 1;
+      return a.localeCompare(b);
+    })
+    .map(([date, count]) => ({ date, count }));
+};
+
+export const getTicketsByOperator = async (): Promise<
+  { operator: { id: string | null; name: string }; count: number }[]
+> => {
+  const { data, error } = await supabase
+    .from("tickets")
+    .select(
+      `
+      assigned_to:users!tickets_assigned_to_fkey(id, name),
+      status
+    `
+    )
+    .neq("status", "Resolved");
+
+  if (error) throw error;
+
+  const countsByOperator = data.reduce<
+    Record<
+      string,
+      { operator: { id: string | null; name: string }; count: number }
+    >
+  >((acc, ticket) => {
+    const operator = ticket.assigned_to;
+    const key = operator?.id || "unassigned";
+
+    if (!acc[key]) {
+      acc[key] = {
+        operator: {
+          id: operator?.id || null,
+          name: operator?.name || "Unassigned",
+        },
+        count: 0,
+      };
+    }
+
+    acc[key].count += 1;
+    return acc;
+  }, {});
+
+  return Object.values(countsByOperator);
 };

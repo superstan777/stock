@@ -15,6 +15,8 @@ const TICKET_FILTER_KEYS = [
   "status",
   "caller.email",
   "assigned_to.email",
+  "estimated_resolution_date",
+  "resolution_date",
 ] as const;
 
 export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => {

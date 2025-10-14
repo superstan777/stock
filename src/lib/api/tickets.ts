@@ -34,7 +34,7 @@ export const getTickets = async (
     status,
     created_at,
     estimated_resolution_date,
-    resolution_date
+    resolution_date,
     ${selectCaller},
     ${selectAssigned}
   `;

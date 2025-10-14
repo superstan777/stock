@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const NewTicketsTable = () => {
   const { data, isLoading, error } = useQuery({
-    queryKey: ["newTickets"],
+    queryKey: ["dashboard", "new-tickets"],
     queryFn: () => getNewTickets(),
   });
 

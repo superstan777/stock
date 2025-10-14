@@ -40,6 +40,7 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
       setWorknote("");
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["worknotes", ticket.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update ticket");
@@ -65,7 +66,17 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
         ticket={ticket}
         setIsLoading={setIsLoading}
         onSubmit={(formData) => {
-          mutation.mutate(formData);
+          const formattedData: TicketUpdate = {
+            ...formData,
+            estimated_resolution_date: formData.estimated_resolution_date
+              ? formData.estimated_resolution_date.toISOString()
+              : null,
+            resolution_date: formData.resolution_date
+              ? formData.resolution_date.toISOString()
+              : null,
+          };
+
+          mutation.mutate(formattedData);
         }}
       />
 

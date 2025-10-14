@@ -21,7 +21,7 @@ export const TicketsByOperatorChart = () => {
     isLoading,
     isError,
   } = useQuery({
-    queryKey: ["tickets-by-operator"],
+    queryKey: ["dashboard", "tickets-by-operator"],
     queryFn: getTicketsByOperator,
     staleTime: 5 * 60 * 1000,
   });

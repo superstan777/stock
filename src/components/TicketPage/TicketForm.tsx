@@ -15,12 +15,15 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import type { TicketWithUsers } from "@/lib/types/tickets";
 import { Constants } from "@/lib/types/supabase";
 import { UserCombobox } from "../DevicesPage/UserCombobox";
+import { DatePicker } from "../ui/date-picker";
 
 const ticketSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().trim().min(1, "Description is required"),
   status: z.string().trim().min(1, "Status is required"),
-  assigned_to: z.uuid("Invalid user").nullable(),
+  assigned_to: z.string().uuid("Invalid user").nullable(),
+  estimated_resolution_date: z.date().nullable(),
+  resolution_date: z.date().nullable(),
 });
 
 type TicketFormData = z.infer<typeof ticketSchema>;
@@ -44,15 +47,33 @@ export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
       description: ticket.description ?? "",
       status: ticket.status ?? "new",
       assigned_to: ticket.assigned_to?.id ?? null,
+      estimated_resolution_date: ticket.estimated_resolution_date
+        ? new Date(ticket.estimated_resolution_date)
+        : null,
+      resolution_date: ticket.resolution_date
+        ? new Date(ticket.resolution_date)
+        : null,
     },
   });
 
-  console.log(ticket);
+  // Ujednolicamy format dat na timestamptz przed wysłaniem do API
+  const handleFormSubmit = (data: TicketFormData) => {
+    const transformedData = {
+      ...data,
+      estimated_resolution_date: data.estimated_resolution_date
+        ? data.estimated_resolution_date.toISOString()
+        : null,
+      resolution_date: data.resolution_date
+        ? data.resolution_date.toISOString()
+        : null,
+    };
+    onSubmit(transformedData as any);
+  };
 
   return (
     <form
       id="ticket-form"
-      onSubmit={handleSubmit(onSubmit)}
+      onSubmit={handleSubmit(handleFormSubmit)}
       className="grid grid-cols-2 gap-4"
     >
       <div className="flex flex-col gap-4">
@@ -105,6 +126,42 @@ export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
                   ))}
                 </SelectContent>
               </Select>
+            )}
+          />
+        </FormField>
+
+        <FormField
+          id="estimated_resolution_date"
+          label="Estimated resolution date"
+          error={errors.estimated_resolution_date?.message}
+        >
+          <Controller
+            control={control}
+            name="estimated_resolution_date"
+            render={({ field }) => (
+              <DatePicker
+                label="Estimated resolution date"
+                value={field.value}
+                onChange={field.onChange}
+              />
+            )}
+          />
+        </FormField>
+
+        <FormField
+          id="resolution_date"
+          label="Resolution date"
+          error={errors.resolution_date?.message}
+        >
+          <Controller
+            control={control}
+            name="resolution_date"
+            render={({ field }) => (
+              <DatePicker
+                label="Resolution date"
+                value={field.value}
+                onChange={field.onChange}
+              />
             )}
           />
         </FormField>

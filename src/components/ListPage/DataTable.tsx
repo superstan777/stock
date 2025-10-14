@@ -19,6 +19,7 @@ import type {
   EntityData,
   EntityDataMap,
 } from "@/lib/types/table";
+import { formatDate } from "@/lib/utils";
 
 function getNestedValue<T extends object>(obj: T, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, key) => {
@@ -63,7 +64,18 @@ export function DataTable<T extends EntityType>({
   };
 
   const renderCellContent = (col: ColumnOption, row: EntityData<T>) => {
-    const value = getNestedValue(row, col.value);
+    let value = getNestedValue(row, col.value);
+
+    if (
+      col.value === "estimated_resolution_date" ||
+      col.value === "resolution_date"
+    ) {
+      if (value) {
+        try {
+          value = formatDate(new Date(String(value)));
+        } catch {}
+      }
+    }
 
     if (col.route) {
       return (

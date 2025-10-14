@@ -12,7 +12,7 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
-import type { TicketWithUsers } from "@/lib/types/tickets";
+import type { TicketWithUsers, TicketUpdate } from "@/lib/types/tickets";
 import { Constants } from "@/lib/types/supabase";
 import { UserCombobox } from "../DevicesPage/UserCombobox";
 import { DatePicker } from "../ui/date-picker";
@@ -21,7 +21,7 @@ const ticketSchema = z.object({
   title: z.string().trim().min(1, "Title is required"),
   description: z.string().trim().min(1, "Description is required"),
   status: z.string().trim().min(1, "Status is required"),
-  assigned_to: z.string().uuid("Invalid user").nullable(),
+  assigned_to: z.uuid("Invalid user").nullable(),
   estimated_resolution_date: z.date().nullable(),
   resolution_date: z.date().nullable(),
 });
@@ -31,7 +31,7 @@ type TicketFormData = z.infer<typeof ticketSchema>;
 export interface TicketFormProps {
   ticket: TicketWithUsers;
   setIsLoading?: (loading: boolean) => void;
-  onSubmit: (data: TicketFormData) => void;
+  onSubmit: (data: TicketUpdate) => void;
 }
 
 export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
@@ -56,9 +56,8 @@ export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
     },
   });
 
-  // Ujednolicamy format dat na timestamptz przed wysłaniem do API
   const handleFormSubmit = (data: TicketFormData) => {
-    const transformedData = {
+    const transformedData: TicketUpdate = {
       ...data,
       estimated_resolution_date: data.estimated_resolution_date
         ? data.estimated_resolution_date.toISOString()
@@ -67,7 +66,8 @@ export const TicketForm: React.FC<TicketFormProps> = ({ ticket, onSubmit }) => {
         ? data.resolution_date.toISOString()
         : null,
     };
-    onSubmit(transformedData as any);
+
+    onSubmit(transformedData);
   };
 
   return (

@@ -66,17 +66,7 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
         ticket={ticket}
         setIsLoading={setIsLoading}
         onSubmit={(formData) => {
-          const formattedData: TicketUpdate = {
-            ...formData,
-            estimated_resolution_date: formData.estimated_resolution_date
-              ? formData.estimated_resolution_date.toISOString()
-              : null,
-            resolution_date: formData.resolution_date
-              ? formData.resolution_date.toISOString()
-              : null,
-          };
-
-          mutation.mutate(formattedData);
+          mutation.mutate(formData);
         }}
       />
 

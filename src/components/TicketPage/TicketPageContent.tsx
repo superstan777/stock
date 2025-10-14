@@ -40,6 +40,7 @@ export function TicketPageContent({ ticket }: { ticket: TicketWithUsers }) {
       setWorknote("");
       queryClient.invalidateQueries({ queryKey: ["tickets"] });
       queryClient.invalidateQueries({ queryKey: ["worknotes", ticket.id] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
     },
     onError: (error) => {
       toast.error(error.message || "Failed to update ticket");

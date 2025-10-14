@@ -14,3 +14,10 @@ export function formatLabel(key: string): string {
     })
     .join(" ");
 }
+
+export const formatDate = (date: Date): string =>
+  new Intl.DateTimeFormat("pl-PL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);

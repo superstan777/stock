@@ -115,6 +115,55 @@ export type Database = {
           }
         ];
       };
+      relations: {
+        Row: {
+          asset_id: string;
+          asset_type: Database["public"]["Enums"]["asset_type"];
+          end_date: string | null;
+          id: string;
+          start_date: string;
+          user_id: string;
+        };
+        Insert: {
+          asset_id: string;
+          asset_type: Database["public"]["Enums"]["asset_type"];
+          end_date?: string | null;
+          id?: string;
+          start_date: string;
+          user_id: string;
+        };
+        Update: {
+          asset_id?: string;
+          asset_type?: Database["public"]["Enums"]["asset_type"];
+          end_date?: string | null;
+          id?: string;
+          start_date?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "relations_asset_id_fkey";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "monitors";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "relations_asset_id_fkey1";
+            columns: ["asset_id"];
+            isOneToOne: false;
+            referencedRelation: "computers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "relations_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          }
+        ];
+      };
       tickets: {
         Row: {
           assigned_to: string | null;
@@ -237,6 +286,7 @@ export type Database = {
       [_ in never]: never;
     };
     Enums: {
+      asset_type: "computer" | "monitor";
       install_status: "Deployed" | "In Inventory" | "End of Life" | "Disposed";
       ticket_status:
         | "New"
@@ -377,6 +427,7 @@ export const Constants = {
   },
   public: {
     Enums: {
+      asset_type: ["computer", "monitor"],
       install_status: ["Deployed", "In Inventory", "End of Life", "Disposed"],
       ticket_status: ["New", "In Progress", "On Hold", "Resolved", "Cancelled"],
     },

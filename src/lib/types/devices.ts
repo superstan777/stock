@@ -5,7 +5,7 @@ export type DevicesColumnType = {
   value: string;
 };
 
-export type DeviceType = "computer" | "monitor";
+export type DeviceType = Database["public"]["Enums"]["device_type"];
 export type InstallStatus = Database["public"]["Enums"]["install_status"];
 
 export type ComputerRow = Database["public"]["Tables"]["computers"]["Row"];

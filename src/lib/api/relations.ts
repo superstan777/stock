@@ -12,7 +12,6 @@ export const getRelationsByDevice = async (
     .select(
       `
       id,
-      device_type,
       start_date,
       end_date,
       device:devices!relations_device_id_fkey(id, serial_number, model, device_type),

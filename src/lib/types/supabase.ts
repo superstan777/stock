@@ -39,81 +39,35 @@ export type Database = {
   }
   public: {
     Tables: {
-      computers: {
+      devices: {
         Row: {
           created_at: string | null
+          device_type: Database["public"]["Enums"]["device_type"]
           id: string
           install_status: Database["public"]["Enums"]["install_status"]
           model: string
           order_id: string
           serial_number: string
-          user_id: string | null
         }
         Insert: {
           created_at?: string | null
+          device_type: Database["public"]["Enums"]["device_type"]
           id?: string
           install_status: Database["public"]["Enums"]["install_status"]
           model: string
           order_id: string
           serial_number: string
-          user_id?: string | null
         }
         Update: {
           created_at?: string | null
+          device_type?: Database["public"]["Enums"]["device_type"]
           id?: string
           install_status?: Database["public"]["Enums"]["install_status"]
           model?: string
           order_id?: string
           serial_number?: string
-          user_id?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "computers_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      monitors: {
-        Row: {
-          created_at: string | null
-          id: string
-          install_status: Database["public"]["Enums"]["install_status"]
-          model: string
-          order_id: string
-          serial_number: string
-          user_id: string | null
-        }
-        Insert: {
-          created_at?: string | null
-          id?: string
-          install_status: Database["public"]["Enums"]["install_status"]
-          model: string
-          order_id: string
-          serial_number: string
-          user_id?: string | null
-        }
-        Update: {
-          created_at?: string | null
-          id?: string
-          install_status?: Database["public"]["Enums"]["install_status"]
-          model?: string
-          order_id?: string
-          serial_number?: string
-          user_id?: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "monitors_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       relations: {
         Row: {
@@ -145,14 +99,7 @@ export type Database = {
             foreignKeyName: "relations_device_id_fkey"
             columns: ["device_id"]
             isOneToOne: false
-            referencedRelation: "monitors"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "relations_device_id_fkey1"
-            columns: ["device_id"]
-            isOneToOne: false
-            referencedRelation: "computers"
+            referencedRelation: "devices"
             referencedColumns: ["id"]
           },
           {

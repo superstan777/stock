@@ -72,7 +72,6 @@ export type Database = {
       relations: {
         Row: {
           device_id: string
-          device_type: Database["public"]["Enums"]["device_type"]
           end_date: string | null
           id: string
           start_date: string
@@ -80,7 +79,6 @@ export type Database = {
         }
         Insert: {
           device_id: string
-          device_type: Database["public"]["Enums"]["device_type"]
           end_date?: string | null
           id?: string
           start_date: string
@@ -88,7 +86,6 @@ export type Database = {
         }
         Update: {
           device_id?: string
-          device_type?: Database["public"]["Enums"]["device_type"]
           end_date?: string | null
           id?: string
           start_date?: string

@@ -1,6 +1,6 @@
-import { DeviceType } from "../types/devices";
 import { createClient } from "@/lib/supabase/client";
 import type {
+  DeviceType,
   InstallStatus,
   DeviceRow,
   DeviceUpdate,

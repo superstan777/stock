@@ -7,7 +7,7 @@ import type { InstallStatus } from "../types/devices";
 type AllComputerKeys = keyof DeviceRow;
 export type ComputerFilterKeyType = Exclude<
   AllComputerKeys,
-  "id" | "created_at" | "user_id"
+  "id" | "created_at"
 >;
 
 const COMPUTER_FILTER_KEYS = [
@@ -15,7 +15,6 @@ const COMPUTER_FILTER_KEYS = [
   "model",
   "order_id",
   "install_status",
-  "user.email",
 ] as const;
 
 export const COMPUTER_COLUMNS: ColumnOption[] = COMPUTER_FILTER_KEYS.map(
@@ -38,16 +37,6 @@ export const COMPUTER_COLUMNS: ColumnOption[] = COMPUTER_FILTER_KEYS.map(
         type: "text",
         route: "computers",
         routeIdPath: "id",
-      };
-    }
-
-    if (key === "user.email") {
-      return {
-        value: key,
-        label: formatLabel(key),
-        type: "text",
-        route: "users",
-        routeIdPath: "user.id",
       };
     }
 

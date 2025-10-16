@@ -5,17 +5,13 @@ import { Constants } from "@/lib/types/supabase";
 import type { InstallStatus } from "../types/devices";
 
 type AllMonitorKeys = keyof DeviceRow;
-export type MonitorFilterKeyType = Exclude<
-  AllMonitorKeys,
-  "id" | "created_at" | "user_id"
->;
+export type MonitorFilterKeyType = Exclude<AllMonitorKeys, "id" | "created_at">;
 
 const MONITOR_FILTER_KEYS = [
   "serial_number",
   "model",
   "order_id",
   "install_status",
-  "user.email",
 ] as const;
 
 export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
@@ -38,16 +34,6 @@ export const MONITOR_COLUMNS: ColumnOption[] = MONITOR_FILTER_KEYS.map(
         type: "text",
         route: "monitors",
         routeIdPath: "id",
-      };
-    }
-
-    if (key === "user.email") {
-      return {
-        value: key,
-        label: formatLabel(key),
-        type: "text",
-        route: "users",
-        routeIdPath: "user.id",
       };
     }
 

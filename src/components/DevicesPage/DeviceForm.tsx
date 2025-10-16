@@ -52,8 +52,6 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const queryClient = useQueryClient();
   const isEditMode = !!device;
 
-  console.log(deviceType);
-
   const { handleSubmit, control, register, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),

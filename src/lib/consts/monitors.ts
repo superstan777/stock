@@ -1,10 +1,10 @@
-import type { MonitorRow } from "../types/devices";
+import type { DeviceRow } from "../types/devices";
 import type { ColumnOption } from "../types/table";
 import { formatLabel } from "../utils";
 import { Constants } from "@/lib/types/supabase";
 import type { InstallStatus } from "../types/devices";
 
-type AllMonitorKeys = keyof MonitorRow;
+type AllMonitorKeys = keyof DeviceRow;
 export type MonitorFilterKeyType = Exclude<
   AllMonitorKeys,
   "id" | "created_at" | "user_id"

@@ -17,10 +17,8 @@ export default function ComputersPage() {
 
   const query = searchParams.get("query") || undefined;
 
-  const queryKey = "monitors";
-
   const { data, isLoading, error } = useQuery({
-    queryKey: [queryKey, currentPage, filter, query],
+    queryKey: ["devices", currentPage, filter, query],
     queryFn: () => getDevices("monitor", filter, query, currentPage),
   });
 

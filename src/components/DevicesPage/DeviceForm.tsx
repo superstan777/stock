@@ -18,49 +18,33 @@ import { useForm, Controller } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
 import type {
-  DeviceType,
   DeviceUpdate,
   DeviceInsert,
-  DeviceForTable,
+  DeviceRow,
+  DeviceType,
 } from "@/lib/types/devices";
 
-import { UserCombobox } from "./UserCombobox";
-import { useQuery } from "@tanstack/react-query";
-import { getUsers } from "@/lib/api/users";
-
-import type { UserRow } from "@/lib/types/users";
-
-const deviceSchema = z
-  .object({
-    serial_number: z.string().trim().min(1, "Serial number is required"),
-    model: z.string().trim().min(1, "Model is required"),
-    order_id: z.string().trim().min(1, "Order ID is required"),
-    install_status: z.enum(Constants.public.Enums.install_status),
-    user_email: z.email().nullable().optional(),
-  })
-  .refine(
-    (data) =>
-      data.install_status !== "Deployed" ||
-      (!!data.user_email && data.user_email !== ""),
-    {
-      message: "User is required",
-      path: ["user_email"],
-    }
-  );
+const deviceSchema = z.object({
+  serial_number: z.string().trim().min(1, "Serial number is required"),
+  model: z.string().trim().min(1, "Model is required"),
+  order_id: z.string().trim().min(1, "Order ID is required"),
+  install_status: z.enum(Constants.public.Enums.install_status),
+  device_type: z.enum(Constants.public.Enums.device_type),
+});
 
 type DeviceFormData = z.infer<typeof deviceSchema>;
 
 export interface DeviceFormProps {
-  deviceType: DeviceType;
-  device?: DeviceForTable;
+  device?: DeviceRow;
+  deviceType?: DeviceType; // używane przy dodawaniu nowego urządzenia
   setIsLoading: (loading: boolean) => void;
   onSuccess?: () => void;
   onError?: (error: unknown) => void;
 }
 
 export const DeviceForm: React.FC<DeviceFormProps> = ({
-  deviceType,
   device,
+  deviceType,
   setIsLoading,
   onSuccess,
   onError,
@@ -68,7 +52,9 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   const queryClient = useQueryClient();
   const isEditMode = !!device;
 
-  const { handleSubmit, control, register, watch, formState } =
+  console.log(deviceType);
+
+  const { handleSubmit, control, register, formState } =
     useForm<DeviceFormData>({
       resolver: zodResolver(deviceSchema),
       defaultValues: {
@@ -76,31 +62,16 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         model: device?.model ?? "",
         order_id: device?.order_id ?? "",
         install_status: device?.install_status ?? "In Inventory",
-        user_email: device?.user?.email ?? null,
+        device_type: device?.device_type ?? deviceType ?? "computer",
       },
     });
 
-  const installStatus = watch("install_status");
-  const userEmail = watch("user_email");
-
-  const { data: users = [] } = useQuery<UserRow[]>({
-    queryKey: ["users"],
-    queryFn: async () => (await getUsers()).data,
-  });
-
   const mutation = useMutation({
     mutationFn: async (data: DeviceFormData) => {
-      const user = users.find((u) => u.email === data.user_email);
-      const payload = {
-        ...data,
-        user_id: user?.id ?? null,
-      };
-      delete payload.user_email;
       if (isEditMode && device?.id) {
-        const { serial_number: _, ...updateData } = payload;
-        return updateDevice(deviceType, device.id, updateData as DeviceUpdate);
+        return updateDevice(device.id, data as DeviceUpdate);
       }
-      return addDevice(deviceType, payload as DeviceInsert);
+      return addDevice(data as DeviceInsert);
     },
     onMutate: () => setIsLoading(true),
     onSettled: () => setIsLoading(false),
@@ -108,9 +79,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
       toast.success(
         device ? "Device has been updated" : "Device has been added"
       );
-      queryClient.invalidateQueries({
-        queryKey: [deviceType === "computer" ? "computers" : "monitors"],
-      });
+      queryClient.invalidateQueries({ queryKey: ["devices"] });
       onSuccess?.();
     },
     onError: (error) => {
@@ -128,7 +97,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
   return (
     <form
       role="form"
-      id={`${deviceType}-form`}
+      id="device-form"
       onSubmit={handleSubmit(onSubmit)}
       className="grid gap-4"
     >
@@ -150,7 +119,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         label="Model"
         error={formState.errors.model?.message}
       >
-        <Input id="model" {...register("model")} autoFocus={isEditMode} />
+        <Input id="model" {...register("model")} />
       </FormField>
 
       <FormField
@@ -171,12 +140,7 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
           name="install_status"
           render={({ field }) => (
             <Select value={field.value} onValueChange={field.onChange}>
-              <SelectTrigger
-                id="install_status"
-                className="w-full"
-                data-testid="install-status-trigger"
-                aria-labelledby="install_status-label"
-              >
+              <SelectTrigger id="install_status" className="w-full">
                 <SelectValue placeholder="Select install status" />
               </SelectTrigger>
               <SelectContent>
@@ -191,24 +155,30 @@ export const DeviceForm: React.FC<DeviceFormProps> = ({
         />
       </FormField>
 
-      {installStatus === "Deployed" && (
-        <FormField
-          id="user_email"
-          label="User Email"
-          error={formState.errors.user_email?.message}
-        >
-          <Controller
-            control={control}
-            name="user_email"
-            render={({ field }) => (
-              <UserCombobox
-                value={userEmail ?? null}
-                onChange={field.onChange}
-              />
-            )}
-          />
-        </FormField>
-      )}
+      <FormField
+        id="device_type"
+        label="Device type"
+        error={formState.errors.device_type?.message}
+      >
+        <Controller
+          control={control}
+          name="device_type"
+          render={({ field }) => (
+            <Select value={field.value} onValueChange={field.onChange} disabled>
+              <SelectTrigger id="device_type" className="w-full">
+                <SelectValue placeholder="Device type" />
+              </SelectTrigger>
+              <SelectContent>
+                {Constants.public.Enums.device_type.map((type) => (
+                  <SelectItem key={type} value={type}>
+                    {type}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          )}
+        />
+      </FormField>
     </form>
   );
 };

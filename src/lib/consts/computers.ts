@@ -1,10 +1,10 @@
-import type { ComputerRow } from "../types/devices";
+import type { DeviceRow } from "../types/devices";
 import type { ColumnOption } from "../types/table";
 import { formatLabel } from "../utils";
 import { Constants } from "@/lib/types/supabase";
 import type { InstallStatus } from "../types/devices";
 
-type AllComputerKeys = keyof ComputerRow;
+type AllComputerKeys = keyof DeviceRow;
 export type ComputerFilterKeyType = Exclude<
   AllComputerKeys,
   "id" | "created_at" | "user_id"
@@ -81,7 +81,6 @@ export const USER_COMPUTERS_COLUMNS: ColumnOption[] =
       };
     }
 
-    // serial_number jako klikalne w kontekście user
     if (key === "serial_number") {
       return {
         value: key,

@@ -49,36 +49,22 @@ export function UserTabs({ userId }: UserTabsProps) {
 
   return (
     <div className="mt-6 w-full">
-      <Tabs defaultValue="computers" className="w-full">
+      <Tabs defaultValue="devices" className="w-full">
         <div className="flex justify-center border-b border-gray-200">
           <TabsList className="inline-flex mb-0 space-x-4">
-            <TabsTrigger value="computers" className={triggerClass}>
-              Computers
+            <TabsTrigger value="devices" className={triggerClass}>
+              Devices
             </TabsTrigger>
-            <TabsTrigger value="monitors" className={triggerClass}>
-              Monitors
-            </TabsTrigger>
+
             <TabsTrigger value="tickets" className={triggerClass}>
               Tickets
             </TabsTrigger>
           </TabsList>
         </div>
 
-        <TabsContent value="computers">
+        <TabsContent value="devices">
           <UserDevicesList
             userId={userId}
-            deviceType="computer"
-            relations={relationsQuery.data ?? []}
-            isLoading={relationsQuery.isLoading}
-            isError={relationsQuery.isError}
-            error={relationsQuery.error}
-          />
-        </TabsContent>
-
-        <TabsContent value="monitors">
-          <UserDevicesList
-            userId={userId}
-            deviceType="monitor"
             relations={relationsQuery.data ?? []}
             isLoading={relationsQuery.isLoading}
             isError={relationsQuery.isError}

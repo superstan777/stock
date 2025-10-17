@@ -75,3 +75,41 @@ export const DEVICE_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
     format: "date",
   },
 ];
+
+export const USER_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
+  {
+    value: "device.serial_number",
+    label: "Serial Number",
+    routeIdPath: "device.id",
+    getRoute: (row) =>
+      row.device.device_type === "computer" ? "computers" : "monitors",
+  },
+  {
+    value: "device.model",
+    label: "Model",
+    type: "text",
+  },
+  {
+    value: "device.device_type",
+    label: "Device Type",
+    type: "text",
+  },
+
+  {
+    value: "device.order_id",
+    label: "Order ID",
+    type: "text",
+  },
+  {
+    value: "start_date",
+    label: "Start Date",
+    type: "text",
+    format: "date",
+  },
+  {
+    value: "end_date",
+    label: "End Date",
+    type: "text",
+    format: "date",
+  },
+];

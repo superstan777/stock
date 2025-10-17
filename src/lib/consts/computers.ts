@@ -52,7 +52,8 @@ export const COMPUTER_COLUMNS: ColumnOption[] = COMPUTER_FILTER_KEYS.map(
 // User Computers (from relations)
 // ===========================
 
-export const USER_COMPUTERS_COLUMNS: ColumnOption[] = [
+// SERIAL, MODEL, DEVICE TYPE, START DATE, END DATE
+export const USER_PAGE_COMPUTERS_COLUMNS: ColumnOption[] = [
   {
     value: "serial_number",
     label: "Serial Number",
@@ -60,6 +61,20 @@ export const USER_COMPUTERS_COLUMNS: ColumnOption[] = [
     route: "computer",
     routeIdPath: "id",
   },
+  {
+    value: "model",
+    label: "Model",
+    type: "text",
+  },
+  {
+    value: "device_type",
+    label: "Device Type",
+    type: "text",
+  },
+];
+
+// EMAIL, START DATE, END DATE
+export const DEVICE_PAGE_COMPUTERS_COLUMNS: ColumnOption[] = [
   {
     value: "model",
     label: "Model",

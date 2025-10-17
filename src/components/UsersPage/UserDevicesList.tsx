@@ -1,7 +1,7 @@
 "use client";
 
 import { DataTable } from "../ListPage/DataTable";
-import { USER_COMPUTERS_COLUMNS } from "@/lib/consts/computers";
+import { USER_PAGE_COMPUTERS_COLUMNS } from "@/lib/consts/computers";
 import { USER_MONITORS_COLUMNS } from "@/lib/consts/monitors";
 import type { DeviceType } from "@/lib/types/devices";
 import type { RelationWithDetails } from "@/lib/types/relations";
@@ -46,7 +46,7 @@ export const UserDevicesList = ({
         data={filteredDevices}
         columns={
           deviceType === "computer"
-            ? USER_COMPUTERS_COLUMNS
+            ? USER_PAGE_COMPUTERS_COLUMNS
             : USER_MONITORS_COLUMNS
         }
         isLoading={isLoading}

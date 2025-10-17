@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { DeviceForm } from "./DeviceForm";
 import { Button } from "@/components/ui/button";
 import { Loader2Icon } from "lucide-react";
 import type { DeviceRow } from "@/lib/types/devices";
 import type { RelationWithDetails } from "@/lib/types/relations";
+import { DeviceHistory } from "./DeviceHistory";
 
 export function DevicePageContent({
   device,
@@ -15,7 +16,6 @@ export function DevicePageContent({
   relations: RelationWithDetails[];
 }) {
   const [isLoading, setIsLoading] = useState(false);
-  console.log(device, "device");
 
   return (
     <div className="p-4 space-y-6">
@@ -33,12 +33,9 @@ export function DevicePageContent({
       </div>
 
       <DeviceForm device={device} setIsLoading={setIsLoading} />
-      {/* data table */}
 
-      {/* Tymczasowo tylko log */}
-      <pre className="text-xs bg-gray-50 p-4 rounded-md">
-        {JSON.stringify(relations, null, 2)}
-      </pre>
+      {/* Sekcja historii przypisań */}
+      <DeviceHistory relations={relations} isLoading={false} />
     </div>
   );
 }

@@ -20,7 +20,6 @@ const RELATION_FILTER_KEYS: RelationFilterKeyType[] = [
 
 export const RELATION_COLUMNS: ColumnOption<"relation">[] =
   RELATION_FILTER_KEYS.map((key) => {
-    // 🔹 Kolumna — serial number → link do konkretnego urządzenia
     if (key === "device.serial_number") {
       return {
         value: key,
@@ -31,7 +30,6 @@ export const RELATION_COLUMNS: ColumnOption<"relation">[] =
       };
     }
 
-    // 🔹 Kolumna — email użytkownika → link do usera
     if (key === "user.email") {
       return {
         value: key,
@@ -41,7 +39,6 @@ export const RELATION_COLUMNS: ColumnOption<"relation">[] =
       };
     }
 
-    // 🔹 Kolumny z datami — formatowanie dat
     if (key === "start_date" || key === "end_date") {
       return {
         value: key,
@@ -51,10 +48,30 @@ export const RELATION_COLUMNS: ColumnOption<"relation">[] =
       };
     }
 
-    // 🔹 Domyślnie kolumna tekstowa (np. model, type)
     return {
       value: key,
       label: formatLabel(key),
       type: "text",
     };
   });
+
+export const DEVICE_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
+  {
+    value: "user.email",
+    label: "User",
+    route: "users",
+    routeIdPath: "user.id",
+  },
+  {
+    value: "start_date",
+    label: "Start Date",
+    type: "text",
+    format: "date",
+  },
+  {
+    value: "end_date",
+    label: "End Date",
+    type: "text",
+    format: "date",
+  },
+];

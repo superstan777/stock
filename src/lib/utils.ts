@@ -6,8 +6,10 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export function formatLabel(key: string): string {
-  return key
-    .split(/[_\.]/)
+  const lastPart = key.includes(".") ? key.split(".").pop()! : key;
+
+  return lastPart
+    .split("_")
     .map((word) => {
       if (word.toLowerCase() === "id") return "ID"; // specjalny przypadek
       return word.charAt(0).toUpperCase() + word.slice(1);

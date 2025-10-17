@@ -8,6 +8,7 @@ import { UserTicketsList } from "./UserTicketsList";
 import { getRelationsByUser } from "@/lib/api/relations";
 import { getUserTickets } from "@/lib/api/tickets";
 import type { RelationWithDetails } from "@/lib/types/relations";
+import { RelationForm } from "./RelationForm";
 
 interface UserTabsProps {
   userId: string;
@@ -63,6 +64,7 @@ export function UserTabs({ userId }: UserTabsProps) {
         </div>
 
         <TabsContent value="devices">
+          <RelationForm defaultUserId={userId} />
           <UserDevicesList
             userId={userId}
             relations={relationsQuery.data ?? []}

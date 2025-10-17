@@ -85,3 +85,14 @@ export const getDevice = async (id: string): Promise<DeviceRow | null> => {
 
   return data as DeviceRow;
 };
+
+export const getAllDevices = async (): Promise<DeviceRow[]> => {
+  const { data, error } = await supabase
+    .from("devices")
+    .select("*")
+    .order("device_type", { ascending: true })
+    .order("serial_number", { ascending: true });
+
+  if (error) throw error;
+  return data ?? [];
+};

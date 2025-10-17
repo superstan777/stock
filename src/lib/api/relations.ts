@@ -59,12 +59,7 @@ export const getRelationsByDevice = async (
 
   return data.map((r) => {
     const { device, user, ...relation } = r as unknown as RelationWithDetails;
-
-    return {
-      ...relation,
-      device: device,
-      user: user,
-    };
+    return { ...relation, device, user };
   });
 };
 
@@ -90,11 +85,31 @@ export const getRelationsByUser = async (
 
   return data.map((r) => {
     const { device, user, ...relation } = r as unknown as RelationWithDetails;
-
-    return {
-      ...relation,
-      device, // pełny obiekt DeviceRow
-      user, // pełny obiekt UserRow
-    };
+    return { ...relation, device, user };
   });
+};
+
+export const createRelation = async ({
+  user_id,
+  device_id,
+  start_date,
+}: {
+  user_id: string;
+  device_id: string;
+  start_date: string;
+}) => {
+  const { data, error } = await supabase
+    .from("relations")
+    .insert([
+      {
+        user_id,
+        device_id,
+        start_date,
+      },
+    ])
+    .select()
+    .single();
+
+  if (error) throw error;
+  return data;
 };

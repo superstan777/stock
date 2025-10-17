@@ -1,12 +1,13 @@
 "use client";
 
 import { useEffect } from "react";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { UserDevicesList } from "./UserDevicesList";
 import { UserTicketsList } from "./UserTicketsList";
-import { getUserDevices } from "@/lib/api/devices";
+import { getRelationsByUser } from "@/lib/api/relations";
 import { getUserTickets } from "@/lib/api/tickets";
+import type { RelationWithDetails } from "@/lib/types/relations";
 
 interface UserTabsProps {
   userId: string;
@@ -15,28 +16,32 @@ interface UserTabsProps {
 export function UserTabs({ userId }: UserTabsProps) {
   const queryClient = useQueryClient();
 
+  // Prefetch danych
   useEffect(() => {
     if (!userId) return;
 
-    const prefetch = async () => {
-      await Promise.all([
-        queryClient.prefetchQuery({
-          queryKey: ["userDevices", userId, "computer"],
-          queryFn: () => getUserDevices("computer", userId),
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["userDevices", userId, "monitor"],
-          queryFn: () => getUserDevices("monitor", userId),
-        }),
-        queryClient.prefetchQuery({
-          queryKey: ["userTickets", userId],
-          queryFn: () => getUserTickets(userId),
-        }),
-      ]);
-    };
+    queryClient.prefetchQuery({
+      queryKey: ["userRelations", userId],
+      queryFn: () => getRelationsByUser(userId),
+    });
 
-    prefetch();
+    queryClient.prefetchQuery({
+      queryKey: ["userTickets", userId],
+      queryFn: () => getUserTickets(userId),
+    });
   }, [userId, queryClient]);
+
+  // Pobieramy dane
+  const relationsQuery = useQuery<RelationWithDetails[]>({
+    queryKey: ["userRelations", userId],
+    queryFn: () => getRelationsByUser(userId),
+  });
+
+  const ticketsQuery = useQuery({
+    queryKey: ["userTickets", userId],
+    queryFn: () => getUserTickets(userId),
+  });
+
   const triggerClass =
     "px-4 py-2 rounded-t-md border-b-2 border-transparent " +
     "data-[state=active]:border-b-gray-200 data-[state=active]:-mb-px " +
@@ -59,19 +64,37 @@ export function UserTabs({ userId }: UserTabsProps) {
           </TabsList>
         </div>
 
-        <div>
-          <TabsContent value="computers">
-            <UserDevicesList userId={userId} deviceType="computer" />
-          </TabsContent>
+        <TabsContent value="computers">
+          <UserDevicesList
+            userId={userId}
+            deviceType="computer"
+            relations={relationsQuery.data ?? []}
+            isLoading={relationsQuery.isLoading}
+            isError={relationsQuery.isError}
+            error={relationsQuery.error}
+          />
+        </TabsContent>
 
-          <TabsContent value="monitors">
-            <UserDevicesList userId={userId} deviceType="monitor" />
-          </TabsContent>
+        <TabsContent value="monitors">
+          <UserDevicesList
+            userId={userId}
+            deviceType="monitor"
+            relations={relationsQuery.data ?? []}
+            isLoading={relationsQuery.isLoading}
+            isError={relationsQuery.isError}
+            error={relationsQuery.error}
+          />
+        </TabsContent>
 
-          <TabsContent value="tickets">
-            <UserTicketsList userId={userId} />
-          </TabsContent>
-        </div>
+        <TabsContent value="tickets">
+          <UserTicketsList
+            userId={userId}
+            tickets={ticketsQuery.data?.data ?? []}
+            isLoading={ticketsQuery.isLoading}
+            isError={ticketsQuery.isError}
+            error={ticketsQuery.error}
+          />
+        </TabsContent>
       </Tabs>
     </div>
   );

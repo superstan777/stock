@@ -1,8 +1,41 @@
 import { createClient } from "@/lib/supabase/client";
-import type { DeviceType } from "../types/devices";
+import type { RelationFilterKeyType } from "../consts/relations";
 import type { RelationWithDetails } from "../types/relations";
 
 const supabase = createClient();
+
+export const getRelations = async (
+  filter?: RelationFilterKeyType,
+  query?: string,
+  page: number = 1,
+  perPage: number = 20
+) => {
+  const selectFields = `
+    id,
+    start_date,
+    end_date,
+    user:users!relations_user_id_fkey(*),
+    device:devices!relations_device_id_fkey(*)
+  `;
+
+  let q = supabase
+    .from("relations")
+    .select(selectFields, { count: "exact" })
+    .order("start_date", { ascending: false });
+
+  if (filter && query) {
+    q = q.ilike(filter, `${query}%`);
+  }
+
+  const from = (page - 1) * perPage;
+  const to = from + perPage - 1;
+  q = q.range(from, to);
+
+  const { data, count, error } = await q;
+  if (error) throw error;
+
+  return { data: data ?? [], count: count ?? 0 };
+};
 
 export const getRelationsByDevice = async (
   deviceId: string
@@ -14,8 +47,8 @@ export const getRelationsByDevice = async (
       id,
       start_date,
       end_date,
-      device:devices!relations_device_id_fkey(id, serial_number, model, device_type),
-      user:users!relations_user_id_fkey(id, name, email)
+      device:devices!relations_device_id_fkey(*),
+      user:users!relations_user_id_fkey(*)
     `
     )
     .eq("device_id", deviceId)
@@ -29,52 +62,39 @@ export const getRelationsByDevice = async (
 
     return {
       ...relation,
-      device: {
-        id: device.id,
-        serial_number: device.serial_number,
-        model: device.model,
-        device_type: device.device_type,
-      },
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-      },
+      device: device,
+      user: user,
     };
   });
 };
 
-// export const getRelationsByUser = async (
-//   userId: string
-// ): Promise<RelationWithDevice[]> => {
-//   const { data, error } = await supabase
-//     .from("relations")
-//     .select(
-//       `
-//       id,
-//       start_date,
-//       end_date,
-//       device:devices(id, serial_number, device_type, model)
-//     `
-//     )
-//     .eq("user_id", userId)
-//     .order("start_date", { ascending: false });
+export const getRelationsByUser = async (
+  userId: string
+): Promise<RelationWithDetails[]> => {
+  const { data, error } = await supabase
+    .from("relations")
+    .select(
+      `
+      id,
+      start_date,
+      end_date,
+      device:devices!relations_device_id_fkey(*),
+      user:users!relations_user_id_fkey(*)
+    `
+    )
+    .eq("user_id", userId)
+    .order("start_date", { ascending: false });
 
-//   if (error) throw error;
+  if (error) throw error;
+  if (!data) return [];
 
-//   return (
-//     data?.map((r) => ({
-//       id: r.id,
-//       start_date: r.start_date,
-//       end_date: r.end_date,
-//       device: r.device
-//         ? {
-//             id: r.device.id,
-//             serial_number: r.device.serial_number,
-//             model: r.device.model,
-//             device_type: r.device.device_type,
-//           }
-//         : null,
-//     })) ?? []
-//   );
-// };
+  return data.map((r) => {
+    const { device, user, ...relation } = r as unknown as RelationWithDetails;
+
+    return {
+      ...relation,
+      device, // pełny obiekt DeviceRow
+      user, // pełny obiekt UserRow
+    };
+  });
+};

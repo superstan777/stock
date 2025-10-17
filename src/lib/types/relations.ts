@@ -1,5 +1,6 @@
 import { Database } from "../types/supabase";
-import type { DeviceType } from "./devices";
+import type { DeviceRow } from "./devices";
+import type { UserRow } from "./users";
 
 export type DevicesColumnType = {
   label: string;
@@ -13,15 +14,6 @@ export type RelationUpdate =
   Database["public"]["Tables"]["relations"]["Update"];
 
 export type RelationWithDetails = Omit<RelationRow, "user_id" | "device_id"> & {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-  };
-  device: {
-    id: string;
-    serial_number: string;
-    model: string;
-    device_type: DeviceType;
-  };
+  user: UserRow;
+  device: DeviceRow;
 };

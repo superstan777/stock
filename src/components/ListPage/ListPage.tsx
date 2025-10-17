@@ -8,7 +8,7 @@ import { PaginationControls } from "./PaginationControls";
 
 interface ListPageProps<T extends EntityType> {
   entity: T;
-  columns: ColumnOption[];
+  columns: ColumnOption<T>[];
   tableData: EntityData<T>[] | undefined;
   pages: PagesType;
   clickableFields?: string[];

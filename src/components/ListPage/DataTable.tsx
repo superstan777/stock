@@ -23,7 +23,7 @@ import { formatDate } from "@/lib/utils";
 
 function getNestedValue<T extends object>(obj: T, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, key) => {
-    if (acc && typeof acc === "object" && acc !== null && key in acc) {
+    if (acc && typeof acc === "object" && key in acc) {
       return (acc as Record<string, unknown>)[key];
     }
     return undefined;
@@ -34,7 +34,7 @@ interface DataTableProps<T extends EntityType> {
   data: EntityDataMap[T][] | undefined;
   isLoading: boolean;
   error: unknown;
-  columns: ColumnOption[];
+  columns: ColumnOption<T>[];
   entity: T;
 }
 
@@ -52,18 +52,23 @@ export function DataTable<T extends EntityType>({
     computer: "computers",
     monitor: "monitors",
     ticket: "tickets",
+    relation: "relations",
   };
 
-  const handleCellClick = (row: EntityData<T>, col: ColumnOption) => {
-    const route = col.route ?? entityRoutes[entity];
-    const id = col.routeIdPath ? getNestedValue(row, col.routeIdPath) : row.id;
+  const handleCellClick = (row: EntityDataMap[T], col: ColumnOption<T>) => {
+    const route = col.getRoute
+      ? col.getRoute(row)
+      : col.route ?? entityRoutes[entity];
+    const id = col.routeIdPath
+      ? getNestedValue(row, col.routeIdPath)
+      : (row as { id: string }).id;
 
-    if (id && route) {
+    if (typeof id === "string" && route) {
       router.push(`/${route}/${id}`);
     }
   };
 
-  const renderCellContent = (col: ColumnOption, row: EntityData<T>) => {
+  const renderCellContent = (col: ColumnOption<T>, row: EntityDataMap[T]) => {
     let value = getNestedValue(row, col.value);
 
     if (
@@ -77,7 +82,7 @@ export function DataTable<T extends EntityType>({
       }
     }
 
-    if (col.route) {
+    if (col.route || col.getRoute) {
       return (
         <Button
           variant="link"
@@ -169,7 +174,7 @@ export function DataTable<T extends EntityType>({
 
         <TableBody>
           {data.map((row) => (
-            <TableRow key={row.id}>
+            <TableRow key={(row as { id: string }).id}>
               {columns.map((col) => (
                 <TableCell key={col.value}>
                   {renderCellContent(col, row)}

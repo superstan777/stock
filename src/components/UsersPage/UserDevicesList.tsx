@@ -1,26 +1,27 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getUserDevices } from "@/lib/api/devices";
-import type { DeviceForTable, DeviceType } from "@/lib/types/devices";
 import { DataTable } from "../ListPage/DataTable";
 import { USER_COMPUTERS_COLUMNS } from "@/lib/consts/computers";
 import { USER_MONITORS_COLUMNS } from "@/lib/consts/monitors";
+import type { DeviceType } from "@/lib/types/devices";
+import type { RelationWithDetails } from "@/lib/types/relations";
 
 interface UserDevicesListProps {
   userId: string;
   deviceType: DeviceType;
+  relations: RelationWithDetails[];
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
 }
 
 export const UserDevicesList = ({
-  userId,
   deviceType,
+  relations,
+  isLoading,
+  isError,
+  error,
 }: UserDevicesListProps) => {
-  const { data, isLoading, isError, error } = useQuery<DeviceForTable[]>({
-    queryKey: ["userDevices", userId, deviceType],
-    queryFn: () => getUserDevices(deviceType, userId),
-  });
-
   if (isLoading) {
     return (
       <div className="mt-8 w-full text-center">Loading {deviceType}s...</div>
@@ -35,17 +36,21 @@ export const UserDevicesList = ({
     );
   }
 
+  const filteredDevices = relations
+    .filter((r) => r.device.device_type === deviceType)
+    .map((r) => r.device);
+
   return (
     <div className="mt-8">
       <DataTable
-        data={data}
-        isLoading={isLoading}
-        error={error}
+        data={filteredDevices}
         columns={
           deviceType === "computer"
             ? USER_COMPUTERS_COLUMNS
             : USER_MONITORS_COLUMNS
         }
+        isLoading={isLoading}
+        error={error}
         entity={deviceType}
       />
     </div>

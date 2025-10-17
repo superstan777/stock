@@ -6,12 +6,15 @@ import { SearchControls } from "./SearchControls";
 import type { ColumnOption, EntityType } from "@/lib/types/table";
 import { FormDialog } from "./FormDialog";
 
-interface ListHeaderProps {
-  entity: EntityType;
-  columns: ColumnOption[];
+interface ListHeaderProps<T extends EntityType> {
+  entity: T;
+  columns: ColumnOption<T>[];
 }
 
-export const ListHeader: React.FC<ListHeaderProps> = ({ entity, columns }) => {
+export const ListHeader = <T extends EntityType>({
+  entity,
+  columns,
+}: ListHeaderProps<T>) => {
   const pathname = usePathname();
   const title =
     pathname === "/"

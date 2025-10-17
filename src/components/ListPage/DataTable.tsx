@@ -71,17 +71,14 @@ export function DataTable<T extends EntityType>({
   const renderCellContent = (col: ColumnOption<T>, row: EntityDataMap[T]) => {
     let value = getNestedValue(row, col.value);
 
-    if (
-      col.value === "estimated_resolution_date" ||
-      col.value === "resolution_date"
-    ) {
-      if (value) {
-        try {
-          value = formatDate(new Date(String(value)));
-        } catch {}
-      }
+    // ✅ Formatowanie wartości typu "date"
+    if (col.format === "date" && value) {
+      try {
+        value = formatDate(new Date(String(value)));
+      } catch {}
     }
 
+    // ✅ Obsługa pól z linkami (route lub getRoute)
     if (col.route || col.getRoute) {
       return (
         <Button
@@ -99,6 +96,7 @@ export function DataTable<T extends EntityType>({
       );
     }
 
+    // ✅ Obsługa pustych wartości
     if (value === null || value === undefined || value === "") {
       return <span className="text-gray-400">None</span>;
     }
@@ -106,6 +104,7 @@ export function DataTable<T extends EntityType>({
     return String(value);
   };
 
+  // ✅ Loading skeleton
   if (isLoading) {
     const skeletonRows = Array.from({ length: 20 });
     return (
@@ -121,6 +120,7 @@ export function DataTable<T extends EntityType>({
     );
   }
 
+  // ✅ Error handling
   if (error) {
     const message =
       error instanceof Error
@@ -153,6 +153,7 @@ export function DataTable<T extends EntityType>({
     );
   }
 
+  // ✅ Empty state
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-500">
@@ -161,6 +162,7 @@ export function DataTable<T extends EntityType>({
     );
   }
 
+  // ✅ Normal render
   return (
     <div className="flex-1 overflow-auto mb-4">
       <Table>

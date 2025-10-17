@@ -11,6 +11,7 @@ export interface ColumnOption<T extends EntityType = EntityType> {
   route?: string;
   routeIdPath?: string;
   getRoute?: (row: EntityDataMap[T]) => string;
+  format?: "date";
 }
 
 export type EntityType =

@@ -16,12 +16,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import type {
   ColumnOption,
   EntityType,
-  EntityData,
   EntityDataMap,
 } from "@/lib/types/table";
 import { formatDate } from "@/lib/utils";
-import { EndRelationButton } from "../EndRelationButton";
 import type { RelationWithDetails } from "@/lib/types/relations";
+import { EndRelationDialog } from "../EndRelationDialog";
 
 function getNestedValue<T extends object>(obj: T, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, key) => {
@@ -81,7 +80,7 @@ export function DataTable<T extends EntityType>({
       }
 
       return (
-        <EndRelationButton
+        <EndRelationDialog
           relationId={relation.id}
           userId={relation.user?.id}
           deviceId={relation.device?.id}
@@ -89,14 +88,12 @@ export function DataTable<T extends EntityType>({
       );
     }
 
-    // ✅ Formatowanie wartości typu "date"
     if (col.format === "date" && value) {
       try {
         value = formatDate(new Date(String(value)));
       } catch {}
     }
 
-    // ✅ Obsługa pól z linkami (route lub getRoute)
     if (col.route || col.getRoute) {
       return (
         <Button
@@ -114,7 +111,6 @@ export function DataTable<T extends EntityType>({
       );
     }
 
-    // ✅ Obsługa pustych wartości
     if (value === null || value === undefined || value === "") {
       return <span className="text-gray-400">None</span>;
     }
@@ -122,7 +118,6 @@ export function DataTable<T extends EntityType>({
     return String(value);
   };
 
-  // ✅ Loading skeleton
   if (isLoading) {
     const skeletonRows = Array.from({ length: 20 });
     return (
@@ -138,7 +133,6 @@ export function DataTable<T extends EntityType>({
     );
   }
 
-  // ✅ Error handling
   if (error) {
     const message =
       error instanceof Error
@@ -171,7 +165,6 @@ export function DataTable<T extends EntityType>({
     );
   }
 
-  // ✅ Empty state
   if (!data || data.length === 0) {
     return (
       <div className="flex items-center justify-center h-full w-full text-gray-500">
@@ -180,7 +173,6 @@ export function DataTable<T extends EntityType>({
     );
   }
 
-  // ✅ Normal render
   return (
     <div className="flex-1 overflow-auto mb-4">
       <Table>

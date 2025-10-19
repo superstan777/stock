@@ -1,36 +1,31 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getUserDevices } from "@/lib/api/devices";
-import type { DeviceForTable, DeviceType } from "@/lib/types/devices";
 import { DataTable } from "../ListPage/DataTable";
-import { USER_COMPUTERS_COLUMNS } from "@/lib/consts/computers";
-import { USER_MONITORS_COLUMNS } from "@/lib/consts/monitors";
+import { USER_PAGE_RELATION_COLUMNS } from "@/lib/consts/relations";
+import type { RelationWithDetails } from "@/lib/types/relations";
 
 interface UserDevicesListProps {
   userId: string;
-  deviceType: DeviceType;
+  relations: RelationWithDetails[];
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
 }
 
 export const UserDevicesList = ({
-  userId,
-  deviceType,
+  relations,
+  isLoading,
+  isError,
+  error,
 }: UserDevicesListProps) => {
-  const { data, isLoading, isError, error } = useQuery<DeviceForTable[]>({
-    queryKey: ["userDevices", userId, deviceType],
-    queryFn: () => getUserDevices(deviceType, userId),
-  });
-
   if (isLoading) {
-    return (
-      <div className="mt-8 w-full text-center">Loading {deviceType}s...</div>
-    );
+    return <div className="mt-8 w-full text-center">Loading devices...</div>;
   }
 
   if (isError) {
     return (
       <div className="mt-8 text-red-500 text-center">
-        Error loading {deviceType}s.
+        Error loading devices.
       </div>
     );
   }
@@ -38,15 +33,11 @@ export const UserDevicesList = ({
   return (
     <div className="mt-8">
       <DataTable
-        data={data}
+        data={relations}
+        columns={USER_PAGE_RELATION_COLUMNS}
         isLoading={isLoading}
         error={error}
-        columns={
-          deviceType === "computer"
-            ? USER_COMPUTERS_COLUMNS
-            : USER_MONITORS_COLUMNS
-        }
-        entity={deviceType}
+        entity="relation"
       />
     </div>
   );

@@ -23,21 +23,6 @@ jest.mock("@tanstack/react-query", () => {
   };
 });
 
-jest.mock("@/lib/supabase/client", () => ({
-  createClient: jest.fn(() => ({
-    from: jest.fn(() => ({
-      select: jest.fn().mockReturnThis(),
-      eq: jest.fn().mockReturnThis(),
-      order: jest.fn().mockReturnThis(),
-      range: jest.fn().mockReturnThis(),
-      insert: jest.fn().mockReturnThis(),
-      update: jest.fn().mockReturnThis(),
-      delete: jest.fn().mockReturnThis(),
-      single: jest.fn().mockResolvedValue({ data: null, error: null }),
-    })),
-  })),
-}));
-
 import { addDevice, updateDevice } from "@/lib/api/devices";
 import { useQuery } from "@tanstack/react-query";
 
@@ -54,9 +39,8 @@ const mockDevice = {
   model: "Dell",
   order_id: "ORD001",
   install_status: "Deployed" as const,
+  device_type: "computer" as const,
   created_at: null,
-  user_id: "user-1",
-  user_email: "ethan.brown@stock.pl",
 };
 
 describe("DeviceForm", () => {
@@ -84,17 +68,14 @@ describe("DeviceForm", () => {
     expect(screen.getByLabelText(/Serial number/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Model/i)).toBeInTheDocument();
     expect(screen.getByLabelText(/Order ID/i)).toBeInTheDocument();
-    expect(screen.getByTestId("install-status-trigger")).toBeInTheDocument();
+    expect(screen.getByLabelText(/Install status/i)).toBeInTheDocument();
+    expect(screen.getByLabelText(/Device type/i)).toBeInTheDocument();
   });
 
   it("renders form fields with default values when editing a device", () => {
     renderWithClient(
       <DeviceForm
-        deviceType="computer"
-        device={{
-          ...mockDevice,
-          user: { id: "user-1", email: "ethan.brown@stock.pl" },
-        }}
+        device={mockDevice}
         setIsLoading={jest.fn()}
         onSuccess={jest.fn()}
         onError={jest.fn()}
@@ -104,6 +85,8 @@ describe("DeviceForm", () => {
     expect(screen.getByDisplayValue("ABC123")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Dell")).toBeInTheDocument();
     expect(screen.getByDisplayValue("ORD001")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("Deployed")).toBeInTheDocument();
+    expect(screen.getByDisplayValue("computer")).toBeInTheDocument();
   });
 
   it("validates required fields when adding a device", async () => {
@@ -124,30 +107,6 @@ describe("DeviceForm", () => {
       ).toBeInTheDocument();
       expect(screen.getByText(/Model is required/i)).toBeInTheDocument();
       expect(screen.getByText(/Order ID is required/i)).toBeInTheDocument();
-    });
-  });
-
-  it("validates user_email when install_status is Deployed", async () => {
-    renderWithClient(
-      <DeviceForm
-        deviceType="computer"
-        setIsLoading={jest.fn()}
-        onSuccess={jest.fn()}
-        onError={jest.fn()}
-      />
-    );
-
-    const selectTrigger = screen.getByTestId("install-status-trigger");
-    fireEvent.click(selectTrigger);
-
-    const listbox = within(screen.getByRole("listbox"));
-    const deployedOption = listbox.getByText("Deployed");
-    fireEvent.click(deployedOption);
-
-    fireEvent.submit(screen.getByRole("form"));
-
-    await waitFor(() => {
-      expect(screen.getByText(/User is required/i)).toBeInTheDocument();
     });
   });
 
@@ -172,12 +131,12 @@ describe("DeviceForm", () => {
     fireEvent.submit(screen.getByRole("form"));
 
     await waitFor(() => {
-      expect(addDevice).toHaveBeenCalledWith("computer", {
+      expect(addDevice).toHaveBeenCalledWith({
         serial_number: "SN123",
         model: "HP",
         order_id: "ORDER-9",
         install_status: "In Inventory",
-        user_id: null,
+        device_type: "computer",
       });
       expect(onSuccess).toHaveBeenCalled();
     });
@@ -187,20 +146,9 @@ describe("DeviceForm", () => {
     (updateDevice as jest.Mock).mockResolvedValueOnce({});
     const onSuccess = jest.fn();
 
-    // mock useQuery aby zwrócić użytkownika
-    (useQuery as jest.Mock).mockReturnValue({
-      data: [{ id: "user-1", email: "ethan.brown@stock.pl" }],
-      isLoading: false,
-      isError: false,
-    });
-
     renderWithClient(
       <DeviceForm
-        deviceType="computer"
-        device={{
-          ...mockDevice,
-          user: { id: "user-1", email: "ethan.brown@stock.pl" },
-        }}
+        device={mockDevice}
         setIsLoading={jest.fn()}
         onSuccess={onSuccess}
         onError={jest.fn()}
@@ -214,11 +162,12 @@ describe("DeviceForm", () => {
     fireEvent.submit(screen.getByRole("form"));
 
     await waitFor(() => {
-      expect(updateDevice).toHaveBeenCalledWith("computer", "1", {
+      expect(updateDevice).toHaveBeenCalledWith("1", {
+        serial_number: "ABC123",
         model: "Lenovo",
         order_id: "ORD001",
         install_status: "Deployed",
-        user_id: "user-1",
+        device_type: "computer",
       });
       expect(onSuccess).toHaveBeenCalled();
     });

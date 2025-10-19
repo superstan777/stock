@@ -72,7 +72,10 @@ export const FormDialog = <T extends EntityType>({
     if (process.env.NODE_ENV === "development") console.error(error);
   };
 
-  const formId = (entity + "-form").replace(/\s+/g, "-");
+  const formId =
+    entity === "computer" || entity === "monitor"
+      ? "device-form"
+      : (entity + "-form").replace(/\s+/g, "-");
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>

@@ -1,24 +1,23 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { getUserTickets } from "@/lib/api/tickets";
-import type { TicketRow } from "@/lib/types/tickets";
 import { DataTable } from "../ListPage/DataTable";
 import { USER_TICKETS_COLUMNS } from "@/lib/consts/tickets";
+import type { TicketRow } from "@/lib/types/tickets";
 
 interface UserTicketsListProps {
   userId: string;
+  tickets: TicketRow[];
+  isLoading: boolean;
+  isError: boolean;
+  error: unknown;
 }
 
-export const UserTicketsList = ({ userId }: UserTicketsListProps) => {
-  const { data, isLoading, isError, error } = useQuery<{
-    data: TicketRow[];
-    count: number;
-  }>({
-    queryKey: ["userTickets", userId],
-    queryFn: () => getUserTickets(userId),
-  });
-
+export const UserTicketsList = ({
+  tickets,
+  isLoading,
+  isError,
+  error,
+}: UserTicketsListProps) => {
   if (isLoading) {
     return <div className="mt-8 text-center">Loading tickets...</div>;
   }
@@ -34,10 +33,10 @@ export const UserTicketsList = ({ userId }: UserTicketsListProps) => {
   return (
     <div className="mt-8">
       <DataTable
-        data={data?.data ?? []}
+        data={tickets}
+        columns={USER_TICKETS_COLUMNS}
         isLoading={isLoading}
         error={error}
-        columns={USER_TICKETS_COLUMNS}
         entity="ticket"
       />
     </div>

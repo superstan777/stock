@@ -11,14 +11,17 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Button } from "../ui/button";
-import { ColumnOption } from "@/lib/types/table";
+import type { ColumnOption, EntityType } from "@/lib/types/table";
 
-interface SearchControlsProps {
+interface SearchControlsProps<T extends EntityType> {
   pathname: string;
-  columns: ColumnOption[];
+  columns: ColumnOption<T>[];
 }
 
-export const SearchControls = ({ pathname, columns }: SearchControlsProps) => {
+export const SearchControls = <T extends EntityType>({
+  pathname,
+  columns,
+}: SearchControlsProps<T>) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 

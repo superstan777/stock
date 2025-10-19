@@ -1,23 +1,32 @@
 import type { UserRow } from "./users";
-import type { DeviceForTable } from "./devices";
+import type { DeviceRow } from "./devices";
 import type { TicketRow, TicketWithUsers } from "./tickets";
+import type { RelationWithDetails } from "./relations";
 
-export interface ColumnOption {
+export interface ColumnOption<T extends EntityType = EntityType> {
   value: string;
   label: string;
-  type?: "text" | "select";
-  options?: string[]; // np. enum values
+  type?: "text" | "select" | "actions";
+  options?: string[];
   route?: string;
   routeIdPath?: string;
+  getRoute?: (row: EntityDataMap[T]) => string;
+  format?: "date";
 }
 
-export type EntityType = "user" | "computer" | "monitor" | "ticket";
+export type EntityType =
+  | "user"
+  | "computer"
+  | "monitor"
+  | "ticket"
+  | "relation";
 
 export type EntityDataMap = {
   user: UserRow;
-  computer: DeviceForTable;
-  monitor: DeviceForTable;
+  computer: DeviceRow;
+  monitor: DeviceRow;
   ticket: TicketWithUsers | TicketRow;
+  relation: RelationWithDetails;
 };
 
 export type EntityData<T extends EntityType> = EntityDataMap[T];

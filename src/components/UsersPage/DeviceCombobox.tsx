@@ -18,32 +18,29 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { getUsers } from "@/lib/api/users";
-import type { UserRow } from "@/lib/types/users";
+import { getAllDevices } from "@/lib/api/devices";
+import type { DeviceRow } from "@/lib/types/devices";
 
-interface UserComboboxProps {
-  value: string | null; // UUID użytkownika
+interface DeviceComboboxProps {
+  value: string | null; // UUID urządzenia
   onChange: (value: string | null) => void;
   disabled?: boolean; // nowy props
 }
 
-export function UserCombobox({
+export function DeviceCombobox({
   value,
   onChange,
   disabled = false,
-}: UserComboboxProps) {
+}: DeviceComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
-  const { data: users = [], isLoading } = useQuery<UserRow[]>({
-    queryKey: ["users", "all"],
-    queryFn: async () => {
-      const res = await getUsers();
-      return res.data;
-    },
+  const { data: devices = [], isLoading } = useQuery<DeviceRow[]>({
+    queryKey: ["devices", "all"],
+    queryFn: getAllDevices,
   });
 
-  const selectedUser = users.find((u) => u.id === value) ?? null;
+  const selectedDevice = devices.find((d) => d.id === value) ?? null;
 
   return (
     <Popover open={open} onOpenChange={(val) => !disabled && setOpen(val)}>
@@ -60,10 +57,12 @@ export function UserCombobox({
             <span className="flex items-center">
               <Loader2Icon className="animate-spin mr-2 h-4 w-4" /> Loading...
             </span>
-          ) : selectedUser ? (
-            selectedUser.email
+          ) : selectedDevice ? (
+            `${selectedDevice.device_type.toUpperCase()} • ${
+              selectedDevice.serial_number
+            } (${selectedDevice.model})`
           ) : (
-            "Select user..."
+            "Select device..."
           )}
           <ChevronsUpDown className="opacity-50" />
         </Button>
@@ -75,31 +74,33 @@ export function UserCombobox({
       >
         <Command>
           <CommandInput
-            placeholder="Search by email..."
+            placeholder="Search by serial or model..."
             className="h-9"
             disabled={disabled || isLoading}
           />
           <CommandList>
             <CommandEmpty>
-              {isLoading ? "Loading..." : "No user found."}
+              {isLoading ? "Loading..." : "No device found."}
             </CommandEmpty>
             <CommandGroup>
-              {users.map((user) => (
+              {devices.map((device) => (
                 <CommandItem
-                  key={user.id}
-                  value={user.email}
+                  key={device.id}
+                  value={device.id}
                   onSelect={() => {
                     if (!disabled) {
-                      onChange(user.id);
+                      onChange(device.id);
                       setOpen(false);
                     }
                   }}
                 >
-                  <span>{user.email}</span>
+                  <span>{`${device.device_type.toUpperCase()} • ${
+                    device.serial_number
+                  } (${device.model})`}</span>
                   <Check
                     className={cn(
                       "ml-auto",
-                      value === user.id ? "opacity-100" : "opacity-0"
+                      value === device.id ? "opacity-100" : "opacity-0"
                     )}
                   />
                 </CommandItem>

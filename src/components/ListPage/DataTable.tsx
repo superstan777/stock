@@ -20,6 +20,8 @@ import type {
   EntityDataMap,
 } from "@/lib/types/table";
 import { formatDate } from "@/lib/utils";
+import { EndRelationButton } from "../EndRelationButton";
+import type { RelationWithDetails } from "@/lib/types/relations";
 
 function getNestedValue<T extends object>(obj: T, path: string): unknown {
   return path.split(".").reduce<unknown>((acc, key) => {
@@ -70,6 +72,22 @@ export function DataTable<T extends EntityType>({
 
   const renderCellContent = (col: ColumnOption<T>, row: EntityDataMap[T]) => {
     let value = getNestedValue(row, col.value);
+
+    if (col.value === "actions" && entity === "relation") {
+      const relation = row as RelationWithDetails;
+
+      if (relation.end_date) {
+        return <span className="text-gray-400 ml-0">Ended</span>;
+      }
+
+      return (
+        <EndRelationButton
+          relationId={relation.id}
+          userId={relation.user?.id}
+          deviceId={relation.device?.id}
+        />
+      );
+    }
 
     // ✅ Formatowanie wartości typu "date"
     if (col.format === "date" && value) {

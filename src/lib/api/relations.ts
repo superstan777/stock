@@ -113,3 +113,14 @@ export const createRelation = async ({
   if (error) throw error;
   return data;
 };
+
+export const endRelation = async (relationId: string): Promise<void> => {
+  const { error } = await supabase
+    .from("relations")
+    .update({
+      end_date: new Date().toISOString(), // ustawia aktualny timestamptz
+    })
+    .eq("id", relationId);
+
+  if (error) throw error;
+};

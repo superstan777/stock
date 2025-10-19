@@ -18,6 +18,12 @@ const RELATION_FILTER_KEYS: RelationFilterKeyType[] = [
   "end_date",
 ];
 
+export const RELATION_ACTION_COLUMN: ColumnOption<"relation"> = {
+  value: "actions",
+  label: "Actions",
+  type: "actions",
+};
+
 export const RELATION_COLUMNS: ColumnOption<"relation">[] =
   RELATION_FILTER_KEYS.map((key) => {
     if (key === "device.serial_number") {
@@ -74,6 +80,7 @@ export const DEVICE_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
     type: "text",
     format: "date",
   },
+  RELATION_ACTION_COLUMN,
 ];
 
 export const USER_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
@@ -112,4 +119,5 @@ export const USER_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
     type: "text",
     format: "date",
   },
+  RELATION_ACTION_COLUMN,
 ];

@@ -6,7 +6,7 @@ import type { RelationWithDetails } from "./relations";
 export interface ColumnOption<T extends EntityType = EntityType> {
   value: string;
   label: string;
-  type?: "text" | "select";
+  type?: "text" | "select" | "actions";
   options?: string[];
   route?: string;
   routeIdPath?: string;

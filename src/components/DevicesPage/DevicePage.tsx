@@ -14,7 +14,7 @@ export function DevicePage({ id }: { id: string }) {
   });
 
   const relationsQuery = useQuery({
-    queryKey: ["relations", id],
+    queryKey: ["deviceRelations", id],
     queryFn: () => getRelationsByDevice(id),
   });
 

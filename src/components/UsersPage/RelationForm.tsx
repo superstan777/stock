@@ -7,14 +7,22 @@ import { Label } from "@/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { createRelation } from "@/lib/api/relations";
 import { DeviceCombobox } from "./DeviceCombobox";
+import { UserCombobox } from "../DevicesPage/UserCombobox";
 import { DatePicker } from "../ui/date-picker";
 
 interface RelationFormProps {
-  defaultUserId: string;
+  defaultUserId?: string;
+  defaultDeviceId?: string;
 }
 
-export function RelationForm({ defaultUserId }: RelationFormProps) {
-  const [deviceId, setDeviceId] = useState<string | null>(null);
+export function RelationForm({
+  defaultUserId,
+  defaultDeviceId,
+}: RelationFormProps) {
+  const [userId, setUserId] = useState<string | null>(defaultUserId ?? null);
+  const [deviceId, setDeviceId] = useState<string | null>(
+    defaultDeviceId ?? null
+  );
   const [startDate, setStartDate] = useState<Date | null>(null);
 
   const queryClient = useQueryClient();
@@ -22,22 +30,28 @@ export function RelationForm({ defaultUserId }: RelationFormProps) {
   const createRelationMutation = useMutation({
     mutationFn: createRelation,
     onSuccess: () => {
-      queryClient.invalidateQueries({
-        queryKey: ["userRelations", defaultUserId],
-      });
-      setDeviceId(null);
+      if (userId)
+        queryClient.invalidateQueries({ queryKey: ["userRelations", userId] });
+      if (deviceId)
+        queryClient.invalidateQueries({
+          queryKey: ["deviceRelations", deviceId],
+        });
+
+      // Reset form
+      if (!defaultUserId) setUserId(null);
+      if (!defaultDeviceId) setDeviceId(null);
       setStartDate(null);
     },
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!deviceId || !startDate) return;
+    if (!userId || !deviceId || !startDate) return;
 
     createRelationMutation.mutate({
-      user_id: defaultUserId,
+      user_id: userId,
       device_id: deviceId,
-      start_date: startDate.toISOString().split("T")[0], // konwersja na string w formacie YYYY-MM-DD
+      start_date: startDate.toISOString().split("T")[0],
     });
   };
 
@@ -46,17 +60,31 @@ export function RelationForm({ defaultUserId }: RelationFormProps) {
       onSubmit={handleSubmit}
       className="flex flex-wrap gap-3 items-end border p-4 rounded-md mb-6"
     >
-      {/* Wybór urządzenia */}
-      <div className="flex flex-col">
-        <Label htmlFor="device">Device</Label>
-        <DeviceCombobox
-          value={deviceId}
-          onChange={setDeviceId}
-          disabled={createRelationMutation.isPending}
-        />
-      </div>
+      {/* User combobox */}
+      {!defaultUserId && (
+        <div className="flex flex-col">
+          <Label htmlFor="user">User</Label>
+          <UserCombobox
+            value={userId}
+            onChange={setUserId}
+            disabled={createRelationMutation.isPending}
+          />
+        </div>
+      )}
 
-      {/* Wybór daty rozpoczęcia */}
+      {/* Device combobox */}
+      {!defaultDeviceId && (
+        <div className="flex flex-col">
+          <Label htmlFor="device">Device</Label>
+          <DeviceCombobox
+            value={deviceId}
+            onChange={setDeviceId}
+            disabled={createRelationMutation.isPending}
+          />
+        </div>
+      )}
+
+      {/* Date picker */}
       <div className="flex flex-col">
         <Label htmlFor="startDate">Start Date</Label>
         <DatePicker
@@ -69,7 +97,9 @@ export function RelationForm({ defaultUserId }: RelationFormProps) {
       {/* Submit */}
       <Button
         type="submit"
-        disabled={!deviceId || !startDate || createRelationMutation.isPending}
+        disabled={
+          !userId || !deviceId || !startDate || createRelationMutation.isPending
+        }
       >
         {createRelationMutation.isPending ? (
           <>
@@ -77,7 +107,7 @@ export function RelationForm({ defaultUserId }: RelationFormProps) {
             Assigning...
           </>
         ) : (
-          "Assign device"
+          "Assign"
         )}
       </Button>
     </form>

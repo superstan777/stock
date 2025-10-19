@@ -35,7 +35,11 @@ export function DevicePageContent({
       <DeviceForm device={device} setIsLoading={setIsLoading} />
 
       {/* Sekcja historii przypisań */}
-      <DeviceHistory relations={relations} isLoading={false} />
+      <DeviceHistory
+        relations={relations}
+        deviceId={device.id}
+        isLoading={false}
+      />
     </div>
   );
 }

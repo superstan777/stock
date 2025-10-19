@@ -22,16 +22,21 @@ import { getUsers } from "@/lib/api/users";
 import type { UserRow } from "@/lib/types/users";
 
 interface UserComboboxProps {
-  value: string | null; // UUID
+  value: string | null; // UUID użytkownika
   onChange: (value: string | null) => void;
+  disabled?: boolean; // nowy props
 }
 
-export function UserCombobox({ value, onChange }: UserComboboxProps) {
+export function UserCombobox({
+  value,
+  onChange,
+  disabled = false,
+}: UserComboboxProps) {
   const [open, setOpen] = React.useState(false);
   const triggerRef = React.useRef<HTMLButtonElement | null>(null);
 
   const { data: users = [], isLoading } = useQuery<UserRow[]>({
-    queryKey: ["users"],
+    queryKey: ["users", "all"],
     queryFn: async () => {
       const res = await getUsers();
       return res.data;
@@ -41,7 +46,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
   const selectedUser = users.find((u) => u.id === value) ?? null;
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={(val) => !disabled && setOpen(val)}>
       <PopoverTrigger asChild>
         <Button
           ref={triggerRef}
@@ -49,6 +54,7 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
           role="combobox"
           aria-expanded={open}
           className="w-full justify-between"
+          disabled={disabled || isLoading}
         >
           {isLoading ? (
             <span className="flex items-center">
@@ -68,7 +74,11 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
         style={{ width: triggerRef.current?.offsetWidth ?? 260 }}
       >
         <Command>
-          <CommandInput placeholder="Search by email..." className="h-9" />
+          <CommandInput
+            placeholder="Search by email..."
+            className="h-9"
+            disabled={disabled || isLoading}
+          />
           <CommandList>
             <CommandEmpty>
               {isLoading ? "Loading..." : "No user found."}
@@ -79,8 +89,10 @@ export function UserCombobox({ value, onChange }: UserComboboxProps) {
                   key={user.id}
                   value={user.email}
                   onSelect={() => {
-                    onChange(user.id);
-                    setOpen(false);
+                    if (!disabled) {
+                      onChange(user.id);
+                      setOpen(false);
+                    }
                   }}
                 >
                   <span>{user.email}</span>

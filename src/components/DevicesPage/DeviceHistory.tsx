@@ -7,10 +7,10 @@ import { RelationForm } from "../UsersPage/RelationForm";
 import type { RelationWithDetails } from "@/lib/types/relations";
 
 interface DeviceHistoryProps {
+  deviceId: string;
   relations: RelationWithDetails[];
   isLoading: boolean;
   error?: unknown;
-  deviceId: string; // potrzebne do przekazania domyślnego device_id
 }
 
 export const DeviceHistory = ({
@@ -23,10 +23,8 @@ export const DeviceHistory = ({
     <div className="space-y-4">
       <h2 className="text-xl font-semibold">Device History</h2>
 
-      {/* Form do tworzenia nowej relacji */}
       <RelationForm defaultDeviceId={deviceId} />
 
-      {/* Tabela historii */}
       <DataTable
         data={relations}
         isLoading={isLoading}

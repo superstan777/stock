@@ -15,6 +15,7 @@ import {
   DialogFooter,
   DialogClose,
 } from "@/components/ui/dialog";
+import { toast } from "sonner";
 
 interface EndRelationDialogProps {
   relationId: string;
@@ -39,7 +40,12 @@ export function EndRelationDialog({
         queryClient.invalidateQueries({
           queryKey: ["deviceRelations", deviceId],
         });
+
+      toast.success("Relation ended");
       setOpen(false);
+    },
+    onError: () => {
+      toast.error("Failed to end relation");
     },
   });
 
@@ -51,10 +57,10 @@ export function EndRelationDialog({
 
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
-          <DialogTitle>End Relation</DialogTitle>
+          <DialogTitle>End relation</DialogTitle>
           <DialogDescription>
             The relation will be ended with the current date. This action cannot
-            be undone.
+            be undone
           </DialogDescription>
         </DialogHeader>
 

@@ -58,7 +58,7 @@ export const AddTicketForm: React.FC<AddTicketFormProps> = ({
       onSuccess?.();
     },
     onError: (error) => {
-      toast.error("Failed to create ticket. Please try again.");
+      toast.error("Failed to create ticket");
       onError?.(error);
     },
   });

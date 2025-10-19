@@ -1,40 +1,25 @@
 import { createClient } from "@/lib/supabase/client";
-import type { RelationFilterKeyType } from "../consts/relations";
 import type { RelationWithDetails } from "../types/relations";
 
 const supabase = createClient();
 
-export const getRelations = async (
-  filter?: RelationFilterKeyType,
-  query?: string,
-  page: number = 1,
-  perPage: number = 20
-) => {
-  const selectFields = `
-    id,
-    start_date,
-    end_date,
-    user:users!relations_user_id_fkey(*),
-    device:devices!relations_device_id_fkey(*)
-  `;
-
-  let q = supabase
+export const getRelations = async () => {
+  const { data, error } = await supabase
     .from("relations")
-    .select(selectFields, { count: "exact" })
+    .select(
+      `
+      id,
+      start_date,
+      end_date,
+      user:users!relations_user_id_fkey(*),
+      device:devices!relations_device_id_fkey(*)
+    `
+    )
     .order("start_date", { ascending: false });
 
-  if (filter && query) {
-    q = q.ilike(filter, `${query}%`);
-  }
-
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
-  q = q.range(from, to);
-
-  const { data, count, error } = await q;
   if (error) throw error;
 
-  return { data: data ?? [], count: count ?? 0 };
+  return data ?? [];
 };
 
 export const getRelationsByDevice = async (
@@ -118,9 +103,22 @@ export const endRelation = async (relationId: string): Promise<void> => {
   const { error } = await supabase
     .from("relations")
     .update({
-      end_date: new Date().toISOString(), // ustawia aktualny timestamptz
+      end_date: new Date().toISOString(),
     })
     .eq("id", relationId);
 
   if (error) throw error;
+};
+
+export const hasActiveRelation = async (deviceId: string): Promise<boolean> => {
+  const { data, error } = await supabase
+    .from("relations")
+    .select("id")
+    .eq("device_id", deviceId)
+    .is("end_date", null)
+    .limit(1)
+    .maybeSingle();
+
+  if (error) throw error;
+  return !!data;
 };

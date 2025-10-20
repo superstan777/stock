@@ -59,9 +59,19 @@ export const getTickets = async (
       filter === "estimated_resolution_date" ||
       filter === "resolution_date"
     ) {
-      // 🔸 Filtrowanie po dacie (dzień bez godziny)
-      const start = new Date(query + "T00:00:00Z").toISOString();
-      const end = new Date(query + "T23:59:59.999Z").toISOString();
+      // query = '2025-10-20' -> traktujemy jako lokalną północ
+      const localDate = new Date(query + "T00:00:00"); // lokalna północ 20.10.2025
+
+      console.log(localDate);
+
+      const start = new Date(localDate.getTime()).toISOString();
+
+      const end = new Date(
+        localDate.getTime() + 24 * 60 * 60 * 1000 - 1
+      ).toISOString();
+      console.log(start, "start");
+      console.log(end, "end");
+
       q = q.gte(filter, start).lte(filter, end);
     } else {
       q = q.ilike(filter, `${query}%`);

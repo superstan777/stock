@@ -121,7 +121,14 @@ export const SearchControls = <T extends EntityType>({
         <DatePicker
           label={selectedColumn.label}
           value={inputValue ? new Date(inputValue) : null}
-          onChange={(val) => setInputValue(val ? formatLocalDate(val) : "")}
+          onChange={(val) => {
+            console.log(val);
+            if (val) {
+              console.log(formatLocalDate(val));
+            }
+
+            setInputValue(val ? formatLocalDate(val) : "");
+          }}
         />
       ) : (
         <Input

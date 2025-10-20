@@ -1,4 +1,3 @@
-// src/lib/api/tickets.ts
 import { createClient } from "@/lib/supabase/client";
 import type {
   TicketRow,
@@ -44,6 +43,7 @@ export const getTickets = async (
     .select(selectFields, { count: "exact" })
     .order("title", { ascending: true });
 
+  // 🔹 Logika filtrowania
   if (filter && query) {
     if (filter === "number") {
       if (/^\d+$/.test(query)) {
@@ -55,6 +55,14 @@ export const getTickets = async (
       q = q.ilike("caller.email", `${query}%`);
     } else if (filter === "assigned_to.email") {
       q = q.ilike("assigned_to.email", `${query}%`);
+    } else if (
+      filter === "estimated_resolution_date" ||
+      filter === "resolution_date"
+    ) {
+      // 🔸 Filtrowanie po dacie (dzień bez godziny)
+      const start = new Date(query + "T00:00:00Z").toISOString();
+      const end = new Date(query + "T23:59:59.999Z").toISOString();
+      q = q.gte(filter, start).lte(filter, end);
     } else {
       q = q.ilike(filter, `${query}%`);
     }
@@ -82,6 +90,8 @@ export const getTickets = async (
 
   return { data: mappedData, count: count ?? 0 };
 };
+
+// 🔹 Pozostałe funkcje bez zmian
 
 export const getTicket = async (
   id: string

@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "../ui/button";
 import type { ColumnOption, EntityType } from "@/lib/types/table";
+import { DatePicker } from "../ui/date-picker";
+import { formatLocalDate } from "@/lib/utils";
 
 interface SearchControlsProps<T extends EntityType> {
   pathname: string;
@@ -28,7 +30,7 @@ export const SearchControls = <T extends EntityType>({
   const [selectedFilter, setSelectedFilter] = useState<string>(
     columns[0]?.value || ""
   );
-  const [inputValue, setInputValue] = useState("");
+  const [inputValue, setInputValue] = useState<string>("");
 
   useEffect(() => {
     const filter = searchParams.get("filter");
@@ -40,12 +42,16 @@ export const SearchControls = <T extends EntityType>({
     setInputValue(query || "");
   }, [searchParams, columns]);
 
+  const selectedColumn = columns.find((col) => col.value === selectedFilter);
+
   const handleSearch = () => {
-    if (inputValue.trim()) {
+    if (inputValue.trim() || selectedColumn?.type === "date") {
       const params = new URLSearchParams(searchParams);
+
       params.set("filter", selectedFilter);
       params.set("query", inputValue.trim());
       params.set("page", "1");
+
       router.push(`${pathname}?${params.toString()}`);
     }
   };
@@ -73,10 +79,9 @@ export const SearchControls = <T extends EntityType>({
     return Boolean(filter && query);
   }, [searchParams]);
 
-  const selectedColumn = columns.find((col) => col.value === selectedFilter);
-
   return (
-    <>
+    <div className="flex gap-2 items-end">
+      {/* Filtr */}
       <Select
         value={selectedFilter}
         onValueChange={handleFilterChange}
@@ -94,6 +99,7 @@ export const SearchControls = <T extends EntityType>({
         </SelectContent>
       </Select>
 
+      {/* Input / DatePicker / Select */}
       {selectedColumn?.type === "select" && selectedColumn.options ? (
         <Select
           value={inputValue}
@@ -111,6 +117,12 @@ export const SearchControls = <T extends EntityType>({
             ))}
           </SelectContent>
         </Select>
+      ) : selectedColumn?.type === "date" ? (
+        <DatePicker
+          label={selectedColumn.label}
+          value={inputValue ? new Date(inputValue) : null}
+          onChange={(val) => setInputValue(val ? formatLocalDate(val) : "")}
+        />
       ) : (
         <Input
           type="text"
@@ -124,10 +136,10 @@ export const SearchControls = <T extends EntityType>({
         />
       )}
 
+      {/* Buttons */}
       <Button onClick={handleSearch} aria-label="Search button">
         Search
       </Button>
-
       <Button
         variant="outline"
         onClick={handleClear}
@@ -136,6 +148,6 @@ export const SearchControls = <T extends EntityType>({
       >
         Clear
       </Button>
-    </>
+    </div>
   );
 };

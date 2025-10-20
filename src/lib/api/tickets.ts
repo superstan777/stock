@@ -45,36 +45,58 @@ export const getTickets = async (
     .select(selectFields, { count: "exact" })
     .order("title", { ascending: true });
 
+  // 🔹 Obsługa wielu filtrów
   for (const { key, value } of filters) {
     if (!value) continue;
 
+    // 🔸 Jeśli wartość zawiera przecinki → traktujemy ją jako listę
+    const values = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
     if (key === "number") {
-      if (/^\d+$/.test(value)) q = q.eq("number", Number(value));
-      else q = q.ilike("number::text", `${value}%`);
-    } else if (key === "caller.email") q = q.ilike("caller.email", `${value}%`);
-    else if (key === "assigned_to.email")
-      q = q.ilike("assigned_to.email", `${value}%`);
-    else if (key === "estimated_resolution_date" || key === "resolution_date") {
-      const localMidnight = new Date(value + "T00:00:00");
-
-      const startUtc = new Date(localMidnight.getTime());
+      // number może być tylko jeden
+      const num = Number(values[0]);
+      if (!isNaN(num)) q = q.eq("number", num);
+    } else if (key === "caller.email") {
+      for (const val of values) q = q.ilike("caller.email", `${val}%`);
+    } else if (key === "assigned_to.email") {
+      for (const val of values) q = q.ilike("assigned_to.email", `${val}%`);
+    } else if (
+      key === "estimated_resolution_date" ||
+      key === "resolution_date"
+    ) {
+      // 🔹 konwersja lokalnej daty na UTC (początek i koniec dnia)
+      const localDate = new Date(values[0] + "T00:00:00");
+      const startUtc = new Date(localDate.getTime());
       const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
-
       q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
+    } else if (key === "status") {
+      // 🔹 kilka statusów naraz
+      if (values.length > 1) q = q.in("status", values);
+      else q = q.eq("status", values[0]);
     } else {
-      q = q.ilike(key, `${value}%`);
+      // 🔹 fallback dla innych pól
+      if (values.length > 1) {
+        q = q.or(values.map((v) => `${key}.ilike.${v}%`).join(","));
+      } else {
+        q = q.ilike(key, `${values[0]}%`);
+      }
     }
   }
 
+  // 🔸 Paginacja
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
   q = q.range(from, to);
 
+  // 🔸 Wykonanie zapytania
   const { data, count, error } = await q;
-
   if (error) throw error;
   if (!data) return { data: [], count: 0 };
 
+  // 🔸 Mapowanie wyników
   const typedData = data as unknown as TicketWithUsers[];
   const mappedData: TicketWithUsers[] = typedData.map(
     ({ caller, assigned_to, ...ticket }) => ({
@@ -246,26 +268,35 @@ export const getOpenTicketsStats = async (): Promise<
   const { data, error } = await supabase
     .from("tickets")
     .select("estimated_resolution_date, status")
-    .neq("status", "Resolved");
+    .in("status", ["New", "On Hold", "In Progress"]);
 
   if (error) throw error;
 
-  const countsByDate: Record<string, number> = {};
+  const countsByDate = data.reduce<Record<string, number>>((acc, ticket) => {
+    if (!ticket.estimated_resolution_date) {
+      acc["No ETA"] = (acc["No ETA"] || 0) + 1;
+      return acc;
+    }
 
-  data.forEach((ticket) => {
-    const day = ticket.estimated_resolution_date
-      ? ticket.estimated_resolution_date.slice(0, 10)
-      : "No ETA";
-    countsByDate[day] = (countsByDate[day] || 0) + 1;
+    // 🔹 Zamiana UTC → lokalna data
+    const utcDate = new Date(ticket.estimated_resolution_date);
+    const localYear = utcDate.getFullYear();
+    const localMonth = String(utcDate.getMonth() + 1).padStart(2, "0");
+    const localDay = String(utcDate.getDate()).padStart(2, "0");
+    const localDateString = `${localYear}-${localMonth}-${localDay}`;
+
+    acc[localDateString] = (acc[localDateString] || 0) + 1;
+    return acc;
+  }, {});
+
+  // 🔹 Sortowanie: "No ETA" na początku, daty rosnąco
+  const sorted = Object.entries(countsByDate).sort(([a], [b]) => {
+    if (a === "No ETA") return -1;
+    if (b === "No ETA") return 1;
+    return a.localeCompare(b);
   });
 
-  return Object.entries(countsByDate)
-    .sort(([a], [b]) => {
-      if (a === "No ETA") return -1;
-      if (b === "No ETA") return 1;
-      return a.localeCompare(b);
-    })
-    .map(([date, count]) => ({ date, count }));
+  return sorted.map(([date, count]) => ({ date, count }));
 };
 
 export const getTicketsByOperator = async (): Promise<

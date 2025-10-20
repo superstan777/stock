@@ -25,6 +25,7 @@ export default function TicketsPage() {
   });
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
+  console.log(data);
 
   return (
     <ListPage

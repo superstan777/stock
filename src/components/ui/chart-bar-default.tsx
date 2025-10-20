@@ -85,7 +85,7 @@ export function ChartBarDefault<T extends ChartBarData>({
           fill={`var(--color-${String(firstKey)})`}
           radius={8}
           style={{ cursor: onBarClick ? "pointer" : "default" }} // ✅ podpowiedź interakcji
-          onClick={(entry: any) => {
+          onClick={(entry) => {
             if (!onBarClick) return;
             const value = entry?.payload?.[xKey];
             if (typeof value === "string") onBarClick(value);

@@ -43,7 +43,6 @@ export const getTickets = async (
     .select(selectFields, { count: "exact" })
     .order("title", { ascending: true });
 
-  // 🔹 Logika filtrowania
   if (filter && query) {
     if (filter === "number") {
       if (/^\d+$/.test(query)) {
@@ -59,18 +58,12 @@ export const getTickets = async (
       filter === "estimated_resolution_date" ||
       filter === "resolution_date"
     ) {
-      // query = '2025-10-20' -> traktujemy jako lokalną północ
-      const localDate = new Date(query + "T00:00:00"); // lokalna północ 20.10.2025
-
-      console.log(localDate);
+      const localDate = new Date(query + "T00:00:00");
 
       const start = new Date(localDate.getTime()).toISOString();
-
       const end = new Date(
         localDate.getTime() + 24 * 60 * 60 * 1000 - 1
       ).toISOString();
-      console.log(start, "start");
-      console.log(end, "end");
 
       q = q.gte(filter, start).lte(filter, end);
     } else {
@@ -100,8 +93,6 @@ export const getTickets = async (
 
   return { data: mappedData, count: count ?? 0 };
 };
-
-// 🔹 Pozostałe funkcje bez zmian
 
 export const getTicket = async (
   id: string

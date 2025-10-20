@@ -228,8 +228,15 @@ export const getResolvedTicketsStats = async (): Promise<
   if (error) throw error;
 
   const countsByDate = data.reduce<Record<string, number>>((acc, ticket) => {
-    const day = ticket.resolution_date!.slice(0, 10);
-    acc[day] = (acc[day] || 0) + 1;
+    const utcDate = new Date(ticket.resolution_date!);
+
+    const localYear = utcDate.getFullYear();
+    const localMonth = String(utcDate.getMonth() + 1).padStart(2, "0");
+    const localDay = String(utcDate.getDate()).padStart(2, "0");
+
+    const localDateString = `${localYear}-${localMonth}-${localDay}`;
+
+    acc[localDateString] = (acc[localDateString] || 0) + 1;
     return acc;
   }, {});
 

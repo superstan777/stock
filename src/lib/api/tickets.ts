@@ -9,21 +9,23 @@ import type { TicketFilterKeyType } from "../consts/tickets";
 
 const supabase = createClient();
 
+export type TicketFilter = {
+  key: TicketFilterKeyType | "caller.email" | "assigned_to.email";
+  value: string;
+};
+
 export const getTickets = async (
-  filter?: TicketFilterKeyType | "caller.email" | "assigned_to.email",
-  query?: string,
+  filters: TicketFilter[] = [],
   page: number = 1,
   perPage: number = 20
 ): Promise<{ data: TicketWithUsers[]; count: number }> => {
-  const selectCaller =
-    filter === "caller.email"
-      ? "caller:users!tickets_caller_id_fkey!inner(id,email)"
-      : "caller:users!tickets_caller_id_fkey(id,email)";
+  const selectCaller = filters.some((f) => f.key === "caller.email")
+    ? "caller:users!tickets_caller_id_fkey!inner(id,email)"
+    : "caller:users!tickets_caller_id_fkey(id,email)";
 
-  const selectAssigned =
-    filter === "assigned_to.email"
-      ? "assigned_to:users!tickets_assigned_to_fkey!inner(id,email)"
-      : "assigned_to:users!tickets_assigned_to_fkey(id,email)";
+  const selectAssigned = filters.some((f) => f.key === "assigned_to.email")
+    ? "assigned_to:users!tickets_assigned_to_fkey!inner(id,email)"
+    : "assigned_to:users!tickets_assigned_to_fkey(id,email)";
 
   const selectFields = `
     id,
@@ -43,31 +45,24 @@ export const getTickets = async (
     .select(selectFields, { count: "exact" })
     .order("title", { ascending: true });
 
-  if (filter && query) {
-    if (filter === "number") {
-      if (/^\d+$/.test(query)) {
-        q = q.eq("number", Number(query));
-      } else {
-        q = q.ilike("number::text", `${query}%`);
-      }
-    } else if (filter === "caller.email") {
-      q = q.ilike("caller.email", `${query}%`);
-    } else if (filter === "assigned_to.email") {
-      q = q.ilike("assigned_to.email", `${query}%`);
-    } else if (
-      filter === "estimated_resolution_date" ||
-      filter === "resolution_date"
-    ) {
-      const localDate = new Date(query + "T00:00:00");
+  for (const { key, value } of filters) {
+    if (!value) continue;
 
-      const start = new Date(localDate.getTime()).toISOString();
-      const end = new Date(
-        localDate.getTime() + 24 * 60 * 60 * 1000 - 1
-      ).toISOString();
+    if (key === "number") {
+      if (/^\d+$/.test(value)) q = q.eq("number", Number(value));
+      else q = q.ilike("number::text", `${value}%`);
+    } else if (key === "caller.email") q = q.ilike("caller.email", `${value}%`);
+    else if (key === "assigned_to.email")
+      q = q.ilike("assigned_to.email", `${value}%`);
+    else if (key === "estimated_resolution_date" || key === "resolution_date") {
+      const localMidnight = new Date(value + "T00:00:00");
 
-      q = q.gte(filter, start).lte(filter, end);
+      const startUtc = new Date(localMidnight.getTime());
+      const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
+
+      q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
     } else {
-      q = q.ilike(filter, `${query}%`);
+      q = q.ilike(key, `${value}%`);
     }
   }
 
@@ -76,11 +71,11 @@ export const getTickets = async (
   q = q.range(from, to);
 
   const { data, count, error } = await q;
+
   if (error) throw error;
   if (!data) return { data: [], count: 0 };
 
   const typedData = data as unknown as TicketWithUsers[];
-
   const mappedData: TicketWithUsers[] = typedData.map(
     ({ caller, assigned_to, ...ticket }) => ({
       ...ticket,

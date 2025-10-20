@@ -14,11 +14,13 @@ interface ChartBarInteractiveProps {
     count: number;
   }[];
   chartConfig: ChartConfig;
+  onBarClick?: (date: string) => void; // nowy props
 }
 
 export function ChartBarInteractive({
   data,
   chartConfig,
+  onBarClick,
 }: ChartBarInteractiveProps) {
   return (
     <ChartContainer
@@ -66,6 +68,12 @@ export function ChartBarInteractive({
         <Bar
           dataKey="count"
           fill={chartConfig.count?.color ?? "var(--chart-3)"}
+          radius={8}
+          onClick={(bar) => {
+            if (onBarClick && bar && "date" in bar) {
+              onBarClick(bar.date as string);
+            }
+          }}
         />
       </BarChart>
     </ChartContainer>

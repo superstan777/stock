@@ -6,12 +6,11 @@ import type { RelationWithDetails } from "./relations";
 export interface ColumnOption<T extends EntityType = EntityType> {
   value: string;
   label: string;
-  type?: "text" | "select" | "actions";
+  type?: "text" | "select" | "actions" | "date";
   options?: string[];
   route?: string;
   routeIdPath?: string;
   getRoute?: (row: EntityDataMap[T]) => string;
-  format?: "date";
 }
 
 export type EntityType =

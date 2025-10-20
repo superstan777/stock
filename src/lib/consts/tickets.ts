@@ -40,6 +40,14 @@ export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => {
     };
   }
 
+  if (key === "estimated_resolution_date" || key === "resolution_date") {
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "date",
+    };
+  }
+
   return {
     value: key,
     label: formatLabel(key),

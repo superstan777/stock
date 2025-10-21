@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getTicketsByOperator } from "@/lib/api/tickets";
 import { ChartBarDefault } from "../ui/chart-bar-default";
 import { Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   Card,
@@ -16,6 +17,9 @@ import { ErrorComponent } from "../ErrorComponent";
 import { EmptyComponent } from "../EmptyComponent";
 
 export const TicketsByOperatorChart = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     data = [],
     isLoading,
@@ -37,7 +41,30 @@ export const TicketsByOperatorChart = () => {
   if (data.length === 0) return <EmptyComponent />;
 
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
-  console.log(data);
+
+  // 🔹 Obsługa kliknięcia w słupek
+  const handleBarClick = (email: string | null) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("status", "New,On Hold,In Progress");
+
+    if (!email) {
+      params.set("assigned_to", "null"); // brak przypisanego operatora
+      params.delete("assigned_to.email"); // usuwamy email
+    } else {
+      params.set("assigned_to.email", email); // przekazujemy email
+      params.delete("assigned_to"); // usuwamy null
+    }
+
+    params.set("page", "1");
+    router.push(`/tickets?${params.toString()}`);
+  };
+
+  // 🔹 Przygotowujemy dane do wykresu: name do wyświetlenia, email do routingu
+  const chartData = data.map((d) => ({
+    name: d.operator.name,
+    email: d.operator.id ? d.operator.email : null,
+    count: d.count,
+  }));
 
   return (
     <Card>
@@ -50,14 +77,15 @@ export const TicketsByOperatorChart = () => {
       </CardHeader>
       <CardContent className="px-2 sm:p-6">
         <ChartBarDefault
-          data={data.map((d) => ({
-            operator: d.operator.name,
-            count: d.count,
-          }))}
+          data={chartData}
           chartConfig={{
             count: { label: "Tickets", color: "var(--chart-1)" },
           }}
-          dataKey="operator"
+          dataKey="name" // wyświetlamy name
+          onBarClick={(name) => {
+            const clicked = chartData.find((d) => d.name === name);
+            handleBarClick(clicked?.email ?? null);
+          }}
         />
       </CardContent>
     </Card>

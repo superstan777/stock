@@ -304,13 +304,16 @@ export const getOpenTicketsStats = async (): Promise<
 };
 
 export const getTicketsByOperator = async (): Promise<
-  { operator: { id: string | null; name: string }; count: number }[]
+  {
+    operator: { id: string | null; name: string; email: string | null };
+    count: number;
+  }[]
 > => {
   const { data, error } = await supabase
     .from("tickets")
     .select(
       `
-      assigned_to:users!tickets_assigned_to_fkey(id, name),
+      assigned_to:users!tickets_assigned_to_fkey(id, name, email),
       status
     `
     )
@@ -318,20 +321,24 @@ export const getTicketsByOperator = async (): Promise<
 
   if (error) throw error;
 
-  const countsByOperator = data.reduce<
+  const countsByOperator = (data ?? []).reduce<
     Record<
       string,
-      { operator: { id: string | null; name: string }; count: number }
+      {
+        operator: { id: string | null; name: string; email: string | null };
+        count: number;
+      }
     >
   >((acc, ticket) => {
     const operator = ticket.assigned_to;
-    const key = operator?.id || "unassigned";
+    const key = operator?.id ?? "unassigned";
 
     if (!acc[key]) {
       acc[key] = {
         operator: {
-          id: operator?.id || null,
-          name: operator?.name || "Unassigned",
+          id: operator?.id ?? null,
+          name: operator?.name ?? "Unassigned",
+          email: operator?.email ?? null,
         },
         count: 0,
       };

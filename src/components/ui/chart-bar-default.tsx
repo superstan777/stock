@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/chart";
 
 export interface ChartBarData {
-  [key: string]: string | number;
+  [key: string]: string | number | null; // ✅ dodajemy null
 }
 
 interface ChartBarDefaultProps<T extends ChartBarData> {
@@ -18,6 +18,7 @@ interface ChartBarDefaultProps<T extends ChartBarData> {
   dataKey?: keyof T;
   tickFormatter?: (value: string | number) => string;
   tooltipLabelFormatter?: (value: string | number) => string;
+  onBarClick?: (value: string) => void;
 }
 
 export function ChartBarDefault<T extends ChartBarData>({
@@ -26,6 +27,7 @@ export function ChartBarDefault<T extends ChartBarData>({
   dataKey,
   tickFormatter,
   tooltipLabelFormatter,
+  onBarClick,
 }: ChartBarDefaultProps<T>) {
   const firstKey = Object.keys(chartConfig)[0] as keyof T;
   const xKey = dataKey || ("date" as keyof T);
@@ -82,6 +84,12 @@ export function ChartBarDefault<T extends ChartBarData>({
           dataKey={firstKey as string}
           fill={`var(--color-${String(firstKey)})`}
           radius={8}
+          style={{ cursor: onBarClick ? "pointer" : "default" }}
+          onClick={(entry) => {
+            if (!onBarClick) return;
+            const value = entry?.payload?.[xKey];
+            if (typeof value === "string") onBarClick(value);
+          }}
         />
       </BarChart>
     </ChartContainer>

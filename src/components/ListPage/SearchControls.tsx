@@ -12,6 +12,8 @@ import {
 } from "@/components/ui/select";
 import { Button } from "../ui/button";
 import type { ColumnOption, EntityType } from "@/lib/types/table";
+import { DatePicker } from "../ui/date-picker";
+import { formatLocalDate } from "@/lib/utils";
 
 interface SearchControlsProps<T extends EntityType> {
   pathname: string;
@@ -31,29 +33,26 @@ export const SearchControls = <T extends EntityType>({
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    const filter = searchParams.get("filter");
-    const query = searchParams.get("query");
+    const currentValue = searchParams.get(selectedFilter);
+    setInputValue(currentValue || "");
+  }, [searchParams, selectedFilter]);
 
-    if (filter && columns.some((col) => col.value === filter)) {
-      setSelectedFilter(filter);
-    }
-    setInputValue(query || "");
-  }, [searchParams, columns]);
+  const selectedColumn = columns.find((col) => col.value === selectedFilter);
 
   const handleSearch = () => {
+    const params = new URLSearchParams(searchParams);
     if (inputValue.trim()) {
-      const params = new URLSearchParams(searchParams);
-      params.set("filter", selectedFilter);
-      params.set("query", inputValue.trim());
-      params.set("page", "1");
-      router.push(`${pathname}?${params.toString()}`);
+      params.set(selectedFilter, inputValue.trim());
+    } else {
+      params.delete(selectedFilter);
     }
+    params.set("page", "1");
+    router.push(`${pathname}?${params.toString()}`);
   };
 
   const handleClear = () => {
     const params = new URLSearchParams(searchParams);
-    params.delete("filter");
-    params.delete("query");
+    columns.forEach((col) => params.delete(col.value));
     params.set("page", "1");
     router.push(`${pathname}?${params.toString()}`);
   };
@@ -63,26 +62,15 @@ export const SearchControls = <T extends EntityType>({
     setInputValue("");
   };
 
-  const handleSelectValueChange = (value: string) => {
-    setInputValue(value);
-  };
-
   const hasSomethingToClear = useMemo(() => {
-    const filter = searchParams.get("filter");
-    const query = searchParams.get("query");
-    return Boolean(filter && query);
-  }, [searchParams]);
-
-  const selectedColumn = columns.find((col) => col.value === selectedFilter);
+    return columns.some((col) => searchParams.get(col.value));
+  }, [searchParams, columns]);
 
   return (
-    <>
-      <Select
-        value={selectedFilter}
-        onValueChange={handleFilterChange}
-        aria-label="Filter by"
-      >
-        <SelectTrigger aria-label="Filter by">
+    <div className="flex gap-2 items-end">
+      {/* 🔹 wybór filtra */}
+      <Select value={selectedFilter} onValueChange={handleFilterChange}>
+        <SelectTrigger>
           <SelectValue placeholder="Select filter" />
         </SelectTrigger>
         <SelectContent>
@@ -94,48 +82,33 @@ export const SearchControls = <T extends EntityType>({
         </SelectContent>
       </Select>
 
-      {selectedColumn?.type === "select" && selectedColumn.options ? (
-        <Select
-          value={inputValue}
-          onValueChange={handleSelectValueChange}
-          aria-label="Select value"
-        >
-          <SelectTrigger aria-label="Select value">
-            <SelectValue placeholder="Select value" />
-          </SelectTrigger>
-          <SelectContent>
-            {selectedColumn.options.map((opt) => (
-              <SelectItem key={opt} value={opt}>
-                {opt}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+      {/* 🔹 input / date */}
+      {selectedColumn?.type === "date" ? (
+        <DatePicker
+          label={selectedColumn.label}
+          value={inputValue ? new Date(inputValue) : null}
+          onChange={(val) => {
+            setInputValue(val ? formatLocalDate(val) : "");
+          }}
+        />
       ) : (
         <Input
           type="text"
           placeholder="Search"
           value={inputValue}
           onChange={(e) => setInputValue(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === "Enter") handleSearch();
-          }}
-          aria-label="Search input"
+          onKeyDown={(e) => e.key === "Enter" && handleSearch()}
         />
       )}
 
-      <Button onClick={handleSearch} aria-label="Search button">
-        Search
-      </Button>
-
+      <Button onClick={handleSearch}>Search</Button>
       <Button
         variant="outline"
         onClick={handleClear}
         disabled={!hasSomethingToClear}
-        aria-label="Clear button"
       >
         Clear
       </Button>
-    </>
+    </div>
   );
 };

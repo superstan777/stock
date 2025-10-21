@@ -4,28 +4,28 @@ import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
 import { getTickets } from "@/lib/api/tickets";
-
 import { TICKET_COLUMNS } from "@/lib/consts/tickets";
-import { TicketFilterKeyType } from "@/lib/consts/tickets";
+import type { TicketFilter } from "@/lib/api/tickets";
 
-export default function ComputersPage() {
+export default function TicketsPage() {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
 
-  const filter = searchParams.get("filter") as TicketFilterKeyType | undefined;
+  const filters: TicketFilter[] = [];
 
-  const query = searchParams.get("query") || undefined;
-
-  const queryKey = "tickets";
+  searchParams.forEach((value, key) => {
+    if (!["page"].includes(key) && value) {
+      filters.push({ key: key as TicketFilter["key"], value });
+    }
+  });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [queryKey, currentPage, filter, query],
-    queryFn: () => getTickets(filter, query, currentPage),
+    queryKey: ["tickets", currentPage, filters],
+    queryFn: () => getTickets(filters, currentPage),
   });
 
   const totalPages = Math.ceil((data?.count ?? 0) / 20);
-
-  const pages = { current: currentPage, total: totalPages };
+  console.log(data);
 
   return (
     <ListPage
@@ -34,7 +34,7 @@ export default function ComputersPage() {
       tableData={data?.data}
       isLoading={isLoading}
       error={error}
-      pages={pages}
+      pages={{ current: currentPage, total: totalPages }}
     />
   );
 }

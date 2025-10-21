@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getOpenTicketsStats } from "@/lib/api/tickets";
 import { ChartBarDefault } from "../ui/chart-bar-default";
 import { Loader2 } from "lucide-react";
-
+import { useRouter, useSearchParams } from "next/navigation";
 import {
   Card,
   CardContent,
@@ -16,6 +16,9 @@ import { ErrorComponent } from "../ErrorComponent";
 import { EmptyComponent } from "../EmptyComponent";
 
 export const TicketsByDayChart = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     data = [],
     isLoading,
@@ -34,15 +37,23 @@ export const TicketsByDayChart = () => {
     );
   }
 
-  if (isError) {
-    return <ErrorComponent />;
-  }
-
-  if (data.length === 0) {
-    return <EmptyComponent />;
-  }
+  if (isError) return <ErrorComponent />;
+  if (data.length === 0) return <EmptyComponent />;
 
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
+
+  const handleBarClick = (date: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("status", "New,On Hold,In Progress");
+
+    if (date === "No ETA") {
+      params.set("estimated_resolution_date", "null");
+    } else {
+      params.set("estimated_resolution_date", date);
+    }
+    params.set("page", "1");
+    router.push(`/tickets?${params.toString()}`);
+  };
 
   return (
     <Card>
@@ -59,6 +70,7 @@ export const TicketsByDayChart = () => {
           chartConfig={{
             count: { label: "Open tickets", color: "var(--chart-2)" },
           }}
+          onBarClick={handleBarClick}
         />
       </CardContent>
     </Card>

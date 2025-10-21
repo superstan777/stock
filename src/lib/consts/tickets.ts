@@ -6,7 +6,7 @@ type AllTicketKeys = keyof TicketRow;
 
 export type TicketFilterKeyType = Exclude<
   AllTicketKeys,
-  "id" | "created_at" | "description" | "caller_id" | "assigned_to"
+  "id" | "created_at" | "description" | "caller_id"
 >;
 
 const TICKET_FILTER_KEYS = [
@@ -37,6 +37,14 @@ export const TICKET_COLUMNS: ColumnOption[] = TICKET_FILTER_KEYS.map((key) => {
       type: "text",
       route: "users",
       routeIdPath: "caller.id",
+    };
+  }
+
+  if (key === "estimated_resolution_date" || key === "resolution_date") {
+    return {
+      value: key,
+      label: formatLabel(key),
+      type: "date",
     };
   }
 

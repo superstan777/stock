@@ -71,14 +71,12 @@ export const DEVICE_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
   {
     value: "start_date",
     label: "Start Date",
-    type: "text",
-    format: "date",
+    type: "date",
   },
   {
     value: "end_date",
     label: "End Date",
-    type: "text",
-    format: "date",
+    type: "date",
   },
   RELATION_ACTION_COLUMN,
 ];
@@ -110,14 +108,12 @@ export const USER_PAGE_RELATION_COLUMNS: ColumnOption<"relation">[] = [
   {
     value: "start_date",
     label: "Start Date",
-    type: "text",
-    format: "date",
+    type: "date",
   },
   {
     value: "end_date",
     label: "End Date",
-    type: "text",
-    format: "date",
+    type: "date",
   },
   RELATION_ACTION_COLUMN,
 ];

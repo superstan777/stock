@@ -88,7 +88,7 @@ export function DataTable<T extends EntityType>({
       );
     }
 
-    if (col.format === "date" && value) {
+    if (col.type === "date" && value) {
       try {
         value = formatDate(new Date(String(value)));
       } catch {}

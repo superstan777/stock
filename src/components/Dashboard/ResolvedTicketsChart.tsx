@@ -4,6 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getResolvedTicketsStats } from "@/lib/api/tickets";
 import { ChartBarInteractive } from "../ui/chart-bar-interactive";
 import { Loader2 } from "lucide-react";
+import { useRouter, useSearchParams } from "next/navigation";
 
 import {
   Card,
@@ -16,6 +17,9 @@ import { ErrorComponent } from "../ErrorComponent";
 import { EmptyComponent } from "../EmptyComponent";
 
 export const ResolvedTicketsChart = () => {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+
   const {
     data = [],
     isLoading,
@@ -34,15 +38,19 @@ export const ResolvedTicketsChart = () => {
     );
   }
 
-  if (isError) {
-    return <ErrorComponent />;
-  }
-
-  if (data.length === 0) {
-    return <EmptyComponent />;
-  }
+  if (isError) return <ErrorComponent />;
+  if (data.length === 0) return <EmptyComponent />;
 
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
+
+  const handleBarClick = (date: string) => {
+    const params = new URLSearchParams(searchParams);
+    params.set("resolution_date", date);
+    params.set("status", "Resolved");
+    params.set("page", "1");
+
+    router.push(`/tickets?${params.toString()}`);
+  };
 
   return (
     <Card>
@@ -62,6 +70,7 @@ export const ResolvedTicketsChart = () => {
               color: "var(--chart-3)",
             },
           }}
+          onBarClick={handleBarClick}
         />
       </CardContent>
     </Card>

@@ -8,16 +8,16 @@ const LOCAL_TZ = Intl.DateTimeFormat().resolvedOptions().timeZone;
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
-
 export function formatLabel(key: string): string {
-  const lastPart = key.includes(".") ? key.split(".").pop()! : key;
+  const replaced = key.replace(/\./g, " ");
 
-  return lastPart
-    .split("_")
-    .map((word) => {
-      if (word.toLowerCase() === "id") return "ID"; // specjalny przypadek
-      return word.charAt(0).toUpperCase() + word.slice(1);
-    })
+  return replaced
+    .split(/[_ ]/)
+    .map((word) =>
+      word.toLowerCase() === "id"
+        ? "ID"
+        : word.charAt(0).toUpperCase() + word.slice(1)
+    )
     .join(" ");
 }
 

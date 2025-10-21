@@ -19,11 +19,15 @@ export const getTickets = async (
   page: number = 1,
   perPage: number = 20
 ): Promise<{ data: TicketWithUsers[]; count: number }> => {
+  const hasAssignedEmailFilter = filters.some(
+    (f) => f.key === "assigned_to.email"
+  );
+
   const selectCaller = filters.some((f) => f.key === "caller.email")
     ? "caller:users!tickets_caller_id_fkey!inner(id,email)"
     : "caller:users!tickets_caller_id_fkey(id,email)";
 
-  const selectAssigned = filters.some((f) => f.key === "assigned_to.email")
+  const selectAssigned = hasAssignedEmailFilter
     ? "assigned_to:users!tickets_assigned_to_fkey!inner(id,email)"
     : "assigned_to:users!tickets_assigned_to_fkey(id,email)";
 
@@ -49,7 +53,6 @@ export const getTickets = async (
   for (const { key, value } of filters) {
     if (!value) continue;
 
-    // 🔸 Jeśli wartość zawiera przecinki → traktujemy ją jako listę
     const values = value
       .split(",")
       .map((v) => v.trim())
@@ -61,27 +64,31 @@ export const getTickets = async (
     } else if (key === "caller.email") {
       for (const val of values) q = q.ilike("caller.email", `${val}%`);
     } else if (key === "assigned_to.email") {
+      // 🔸 Szukanie po emailu przypisanego operatora (INNER JOIN)
       for (const val of values) q = q.ilike("assigned_to.email", `${val}%`);
+    } else if (key === "assigned_to") {
+      // 🔸 Szukanie ticketów bez przypisanego operatora
+      if (values[0] === "null") {
+        q = q.is("assigned_to", null);
+      } else {
+        q = q.eq("assigned_to", values[0]);
+      }
     } else if (
       key === "estimated_resolution_date" ||
       key === "resolution_date"
     ) {
-      // 🔹 jeśli filtr to "null" → szukamy ticketów bez daty
       if (values[0] === "null") {
         q = q.is(key, null);
       } else {
-        // 🔹 konwersja lokalnej daty na UTC (początek i koniec dnia)
         const localDate = new Date(values[0] + "T00:00:00");
         const startUtc = new Date(localDate.getTime());
         const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
         q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
       }
     } else if (key === "status") {
-      // 🔹 kilka statusów naraz
       if (values.length > 1) q = q.in("status", values);
       else q = q.eq("status", values[0]);
     } else {
-      // 🔹 fallback dla innych pól
       if (values.length > 1) {
         q = q.or(values.map((v) => `${key}.ilike.${v}%`).join(","));
       } else {

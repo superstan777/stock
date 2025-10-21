@@ -6,7 +6,7 @@ type AllTicketKeys = keyof TicketRow;
 
 export type TicketFilterKeyType = Exclude<
   AllTicketKeys,
-  "id" | "created_at" | "description" | "caller_id" | "assigned_to"
+  "id" | "created_at" | "description" | "caller_id"
 >;
 
 const TICKET_FILTER_KEYS = [

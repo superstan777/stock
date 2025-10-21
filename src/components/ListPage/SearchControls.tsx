@@ -15,15 +15,13 @@ import type { ColumnOption, EntityType } from "@/lib/types/table";
 import { DatePicker } from "../ui/date-picker";
 import { formatLocalDate } from "@/lib/utils";
 
-interface SearchControlsProps<T extends EntityType> {
-  pathname: string;
-  columns: ColumnOption<T>[];
-}
-
 export const SearchControls = <T extends EntityType>({
   pathname,
   columns,
-}: SearchControlsProps<T>) => {
+}: {
+  pathname: string;
+  columns: ColumnOption<T>[];
+}) => {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -39,6 +37,18 @@ export const SearchControls = <T extends EntityType>({
 
   const selectedColumn = columns.find((col) => col.value === selectedFilter);
 
+  const buildOrderedUrl = (params: URLSearchParams) => {
+    const page = params.get("page");
+    params.delete("page");
+
+    const entries = Array.from(params.entries());
+    const queryString =
+      entries.map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join("&") +
+      (page ? `&page=${page}` : "");
+
+    return `${pathname}?${queryString}`;
+  };
+
   const handleSearch = () => {
     const params = new URLSearchParams(searchParams);
     if (inputValue.trim()) {
@@ -47,14 +57,14 @@ export const SearchControls = <T extends EntityType>({
       params.delete(selectedFilter);
     }
     params.set("page", "1");
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(buildOrderedUrl(params));
   };
 
   const handleClear = () => {
     const params = new URLSearchParams(searchParams);
     columns.forEach((col) => params.delete(col.value));
     params.set("page", "1");
-    router.push(`${pathname}?${params.toString()}`);
+    router.push(buildOrderedUrl(params));
   };
 
   const handleFilterChange = (value: string) => {
@@ -68,7 +78,6 @@ export const SearchControls = <T extends EntityType>({
 
   return (
     <div className="flex gap-2 items-end">
-      {/* 🔹 wybór filtra */}
       <Select value={selectedFilter} onValueChange={handleFilterChange}>
         <SelectTrigger>
           <SelectValue placeholder="Select filter" />
@@ -82,14 +91,11 @@ export const SearchControls = <T extends EntityType>({
         </SelectContent>
       </Select>
 
-      {/* 🔹 input / date */}
       {selectedColumn?.type === "date" ? (
         <DatePicker
           label={selectedColumn.label}
           value={inputValue ? new Date(inputValue) : null}
-          onChange={(val) => {
-            setInputValue(val ? formatLocalDate(val) : "");
-          }}
+          onChange={(val) => setInputValue(val ? formatLocalDate(val) : "")}
         />
       ) : (
         <Input

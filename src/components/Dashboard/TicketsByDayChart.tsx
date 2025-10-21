@@ -43,12 +43,15 @@ export const TicketsByDayChart = () => {
   const total = data.reduce((acc, curr) => acc + curr.count, 0);
 
   const handleBarClick = (date: string) => {
-    if (date === "No ETA") return;
-
     const params = new URLSearchParams(searchParams);
-    params.set("estimated_resolution_date", date);
     params.set("status", "New,On Hold,In Progress");
     params.set("page", "1");
+
+    if (date === "No ETA") {
+      params.set("estimated_resolution_date", "null");
+    } else {
+      params.set("estimated_resolution_date", date);
+    }
 
     router.push(`/tickets?${params.toString()}`);
   };

@@ -56,7 +56,6 @@ export const getTickets = async (
       .filter(Boolean);
 
     if (key === "number") {
-      // number może być tylko jeden
       const num = Number(values[0]);
       if (!isNaN(num)) q = q.eq("number", num);
     } else if (key === "caller.email") {
@@ -67,11 +66,16 @@ export const getTickets = async (
       key === "estimated_resolution_date" ||
       key === "resolution_date"
     ) {
-      // 🔹 konwersja lokalnej daty na UTC (początek i koniec dnia)
-      const localDate = new Date(values[0] + "T00:00:00");
-      const startUtc = new Date(localDate.getTime());
-      const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
-      q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
+      // 🔹 jeśli filtr to "null" → szukamy ticketów bez daty
+      if (values[0] === "null") {
+        q = q.is(key, null);
+      } else {
+        // 🔹 konwersja lokalnej daty na UTC (początek i koniec dnia)
+        const localDate = new Date(values[0] + "T00:00:00");
+        const startUtc = new Date(localDate.getTime());
+        const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
+        q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
+      }
     } else if (key === "status") {
       // 🔹 kilka statusów naraz
       if (values.length > 1) q = q.in("status", values);

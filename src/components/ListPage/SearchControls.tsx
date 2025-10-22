@@ -31,12 +31,13 @@ export const SearchControls = <T extends EntityType>({
   const [inputValue, setInputValue] = useState("");
 
   useEffect(() => {
-    const currentValue = searchParams.get(selectedFilter);
-    setInputValue(currentValue || "");
-  }, [searchParams, selectedFilter]);
+    // nie chcemy ustawiać inputValue z URL, bo teraz będziemy dodawać, nie nadpisywać
+    setInputValue("");
+  }, [selectedFilter]);
 
   const selectedColumn = columns.find((col) => col.value === selectedFilter);
 
+  // 🔹 Utrzymujemy page na końcu URL
   const buildOrderedUrl = (params: URLSearchParams) => {
     const page = params.get("page");
     params.delete("page");
@@ -49,17 +50,29 @@ export const SearchControls = <T extends EntityType>({
     return `${pathname}?${queryString}`;
   };
 
+  // 🔹 Dodaj nowy filtr lub dopisz wartość do istniejącego
   const handleSearch = () => {
+    const trimmedValue = inputValue.trim();
+    if (!trimmedValue) return;
+
     const params = new URLSearchParams(searchParams);
-    if (inputValue.trim()) {
-      params.set(selectedFilter, inputValue.trim());
+
+    const existing = params.get(selectedFilter);
+    if (existing) {
+      const existingValues = existing.split(",").map((v) => v.trim());
+      if (!existingValues.includes(trimmedValue)) {
+        params.set(selectedFilter, [...existingValues, trimmedValue].join(","));
+      }
     } else {
-      params.delete(selectedFilter);
+      params.set(selectedFilter, trimmedValue);
     }
+
     params.set("page", "1");
     router.push(buildOrderedUrl(params));
+    setInputValue("");
   };
 
+  // 🔹 Czyścimy WSZYSTKIE filtry
   const handleClear = () => {
     const params = new URLSearchParams(searchParams);
     columns.forEach((col) => params.delete(col.value));

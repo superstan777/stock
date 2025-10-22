@@ -8,31 +8,56 @@ import type {
 } from "../types/devices";
 import type { ComputerFilterKeyType } from "../consts/computers";
 import type { MonitorFilterKeyType } from "../consts/monitors";
-
+import { ALL_INSTALL_STATUSES } from "@/lib/consts/devices";
 const supabase = createClient();
+
+export interface DeviceFilter {
+  key: ComputerFilterKeyType | MonitorFilterKeyType | string;
+  value: string;
+}
 
 export const getDevices = async (
   deviceType: DeviceType,
-  filter?: ComputerFilterKeyType | MonitorFilterKeyType,
-  query?: string,
+  filters: DeviceFilter[] = [],
   page: number = 1,
   perPage: number = 20
 ): Promise<{ data: DeviceRow[]; count: number }> => {
-  const selectFields = `
-  *
-  `;
-
   let q = supabase
     .from("devices")
-    .select(selectFields, { count: "exact" })
+    .select("*", { count: "exact" })
     .eq("device_type", deviceType)
     .order("serial_number", { ascending: true });
 
-  if (filter && query) {
-    if (filter === "install_status") {
-      q = q.eq(filter, query as InstallStatus);
+  for (const { key, value } of filters) {
+    if (!value) continue;
+
+    const values = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
+    if (key === "install_status") {
+      const matchingStatuses = ALL_INSTALL_STATUSES.filter((status) =>
+        status.toLowerCase().includes(values[0].toLowerCase())
+      );
+
+      if (matchingStatuses.length > 0) {
+        q = q.in(key, matchingStatuses as InstallStatus[]);
+      } else {
+        q = q.is(key, null);
+      }
+    } else if (key === "id" || key === "serial_number") {
+      if (values.length > 1) {
+        q = q.or(values.map((v) => `${key}.ilike.${v}%`).join(","));
+      } else {
+        q = q.ilike(key, `${values[0]}%`);
+      }
     } else {
-      q = q.ilike(filter, `${query}%`);
+      if (values.length > 1) {
+        q = q.or(values.map((v) => `${key}.ilike.${v}%`).join(","));
+      } else {
+        q = q.ilike(key, `${values[0]}%`);
+      }
     }
   }
 
@@ -41,7 +66,6 @@ export const getDevices = async (
   q = q.range(from, to);
 
   const { data, count, error } = await q;
-
   if (error) throw error;
   if (!data) return { data: [], count: 0 };
 

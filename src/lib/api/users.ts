@@ -19,7 +19,6 @@ export const getUsers = async (
     .select("*", { count: "exact" })
     .order("name", { ascending: true });
 
-  // 🔹 Obsługa wielu filtrów (np. name, email)
   for (const { key, value } of filters) {
     if (!value) continue;
 
@@ -30,7 +29,6 @@ export const getUsers = async (
 
     if (values.length === 0) continue;
 
-    // 🔸 Obsługa wielu wartości (OR) i pojedynczych (ILIKE)
     if (values.length > 1) {
       const orFilters = values.map((v) => `${key}.ilike.${v}%`).join(",");
       q = q.or(orFilters);
@@ -39,7 +37,6 @@ export const getUsers = async (
     }
   }
 
-  // 🔹 Paginacja
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
   q = q.range(from, to);
@@ -52,8 +49,6 @@ export const getUsers = async (
     count: count ?? 0,
   };
 };
-
-// 🔹 CRUD operacje
 
 export const addUser = async (user: UserInsert): Promise<UserRow[]> => {
   const { data, error } = await supabase.from("users").insert([user]);

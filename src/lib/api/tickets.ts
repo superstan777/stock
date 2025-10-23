@@ -91,14 +91,12 @@ export const getTickets = async (
     const { data, count, error } = await q;
     if (error) throw error;
 
-    // 🔹 Rzutowanie na właściwy typ
     return {
       data: (data ?? []) as unknown as TicketWithUsers[],
       count: count ?? 0,
     };
   };
 
-  // 🔹 Rozdzielamy filtry
   const normalFilters = filters.filter(
     (f) => f.key !== "caller.email" && f.key !== "assigned_to.email"
   );
@@ -108,7 +106,6 @@ export const getTickets = async (
   );
 
   if (emailFilters.length === 0) {
-    // ✅ Wymuszamy typ tu
     const result = await runQuery(filters);
     return {
       data: result.data as TicketWithUsers[],
@@ -116,7 +113,6 @@ export const getTickets = async (
     };
   }
 
-  // 🔹 Jeśli są filtry emailowe — łączymy wyniki wielu zapytań
   const allResults: TicketWithUsers[] = [];
   const seenIds = new Set<string>();
 

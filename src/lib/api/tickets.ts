@@ -59,8 +59,19 @@ export const getTickets = async (
       .filter(Boolean);
 
     if (key === "number") {
-      const num = Number(values[0]);
-      if (!isNaN(num)) q = q.eq("number", num);
+      // Obsługa wielu numerów i/lub częściowych fraz
+      const numericValues = values.filter((v) => /^\d+$/.test(v)).map(Number);
+      const nonNumericValues = values.filter((v) => !/^\d+$/.test(v));
+
+      if (numericValues.length > 0 && nonNumericValues.length === 0) {
+        // tylko liczby -> użyj `in` albo `eq`
+        if (numericValues.length > 1) q = q.in("number", numericValues);
+        else q = q.eq("number", numericValues[0]);
+      } else {
+        // są nienumeryczne wpisy (lub mieszanka) -> użyj `or` z number::text.ilike
+        const orExpr = values.map((v) => `number::text.ilike.${v}%`).join(",");
+        q = q.or(orExpr);
+      }
     } else if (key === "caller.email") {
       for (const val of values) q = q.ilike("caller.email", `${val}%`);
     } else if (key === "assigned_to.email") {

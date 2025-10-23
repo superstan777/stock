@@ -44,93 +44,107 @@ export const getTickets = async (
     ${selectAssigned}
   `;
 
-  let q = supabase
-    .from("tickets")
-    .select(selectFields, { count: "exact" })
-    .order("title", { ascending: true });
+  const runQuery = async (extraFilters: TicketFilter[] = []) => {
+    let q = supabase
+      .from("tickets")
+      .select(selectFields, { count: "exact" })
+      .order("title", { ascending: true });
 
-  // 🔹 Obsługa wielu filtrów
-  for (const { key, value } of filters) {
-    if (!value) continue;
+    for (const { key, value } of extraFilters) {
+      if (!value) continue;
 
-    const values = value
-      .split(",")
-      .map((v) => v.trim())
-      .filter(Boolean);
+      const values = value
+        .split(",")
+        .map((v) => v.trim())
+        .filter(Boolean);
 
-    if (key === "number") {
-      // Obsługa wielu numerów i/lub częściowych fraz
-      const numericValues = values.filter((v) => /^\d+$/.test(v)).map(Number);
-      const nonNumericValues = values.filter((v) => !/^\d+$/.test(v));
-
-      if (numericValues.length > 0 && nonNumericValues.length === 0) {
-        // tylko liczby -> użyj `in` albo `eq`
+      if (key === "number") {
+        const numericValues = values.filter((v) => /^\d+$/.test(v)).map(Number);
         if (numericValues.length > 1) q = q.in("number", numericValues);
         else q = q.eq("number", numericValues[0]);
-      } else {
-        // są nienumeryczne wpisy (lub mieszanka) -> użyj `or` z number::text.ilike
-        const orExpr = values.map((v) => `number::text.ilike.${v}%`).join(",");
-        q = q.or(orExpr);
-      }
-    } else if (key === "caller.email") {
-      for (const val of values) q = q.ilike("caller.email", `${val}%`);
-    } else if (key === "assigned_to.email") {
-      // 🔸 Szukanie po emailu przypisanego operatora (INNER JOIN)
-      for (const val of values) q = q.ilike("assigned_to.email", `${val}%`);
-    } else if (key === "assigned_to") {
-      // 🔸 Szukanie ticketów bez przypisanego operatora
-      if (values[0] === "null") {
-        q = q.is("assigned_to", null);
-      } else {
-        q = q.eq("assigned_to", values[0]);
-      }
-    } else if (
-      key === "estimated_resolution_date" ||
-      key === "resolution_date"
-    ) {
-      if (values[0] === "null") {
-        q = q.is(key, null);
-      } else {
-        const localDate = new Date(values[0] + "T00:00:00");
-        const startUtc = new Date(localDate.getTime());
-        const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
-        q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
-      }
-    } else if (key === "status") {
-      if (values.length > 1) q = q.in("status", values);
-      else q = q.eq("status", values[0]);
-    } else {
-      if (values.length > 1) {
-        q = q.or(values.map((v) => `${key}.ilike.${v}%`).join(","));
+      } else if (key === "caller.email" || key === "assigned_to.email") {
+        q = q.ilike(key, `${values[0]}%`);
+      } else if (key === "status") {
+        if (values.length > 1) q = q.in("status", values);
+        else q = q.eq("status", values[0]);
+      } else if (
+        key === "estimated_resolution_date" ||
+        key === "resolution_date"
+      ) {
+        const val = values[0];
+        if (val === "null") q = q.is(key, null);
+        else {
+          const localDate = new Date(val + "T00:00:00");
+          const startUtc = new Date(localDate.getTime());
+          const endUtc = new Date(startUtc.getTime() + 24 * 60 * 60 * 1000 - 1);
+          q = q.gte(key, startUtc.toISOString()).lte(key, endUtc.toISOString());
+        }
       } else {
         q = q.ilike(key, `${values[0]}%`);
       }
     }
-  }
 
-  // 🔸 Paginacja
-  const from = (page - 1) * perPage;
-  const to = from + perPage - 1;
-  q = q.range(from, to);
+    const from = (page - 1) * perPage;
+    const to = from + perPage - 1;
+    q = q.range(from, to);
 
-  // 🔸 Wykonanie zapytania
-  const { data, count, error } = await q;
-  if (error) throw error;
-  if (!data) return { data: [], count: 0 };
+    const { data, count, error } = await q;
+    if (error) throw error;
 
-  // 🔸 Mapowanie wyników
-  const typedData = data as unknown as TicketWithUsers[];
-  const mappedData: TicketWithUsers[] = typedData.map(
-    ({ caller, assigned_to, ...ticket }) => ({
-      ...ticket,
-      caller: caller ? { id: caller.id, email: caller.email } : null,
-      assigned_to: assigned_to
-        ? { id: assigned_to.id, email: assigned_to.email }
-        : null,
-    })
+    // 🔹 Rzutowanie na właściwy typ
+    return {
+      data: (data ?? []) as unknown as TicketWithUsers[],
+      count: count ?? 0,
+    };
+  };
+
+  // 🔹 Rozdzielamy filtry
+  const normalFilters = filters.filter(
+    (f) => f.key !== "caller.email" && f.key !== "assigned_to.email"
   );
 
-  return { data: mappedData, count: count ?? 0 };
+  const emailFilters = filters.filter(
+    (f) => f.key === "caller.email" || f.key === "assigned_to.email"
+  );
+
+  if (emailFilters.length === 0) {
+    // ✅ Wymuszamy typ tu
+    const result = await runQuery(filters);
+    return {
+      data: result.data as TicketWithUsers[],
+      count: result.count,
+    };
+  }
+
+  // 🔹 Jeśli są filtry emailowe — łączymy wyniki wielu zapytań
+  const allResults: TicketWithUsers[] = [];
+  const seenIds = new Set<string>();
+
+  for (const f of emailFilters) {
+    const values = f.value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
+    for (const v of values) {
+      const singleResult = await runQuery([
+        ...normalFilters,
+        { key: f.key, value: v },
+      ]);
+
+      for (const t of singleResult.data) {
+        if (!seenIds.has(t.id)) {
+          allResults.push(t);
+          seenIds.add(t.id);
+        }
+      }
+    }
+  }
+
+  return {
+    data: allResults,
+    count: allResults.length,
+  };
 };
 
 export const getTicket = async (

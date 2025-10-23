@@ -38,13 +38,13 @@ export const getDevices = async (
 
     if (key === "install_status") {
       const matchingStatuses = ALL_INSTALL_STATUSES.filter((status) =>
-        status.toLowerCase().includes(values[0].toLowerCase())
+        values.some((v) => status.toLowerCase().includes(v.toLowerCase()))
       );
 
       if (matchingStatuses.length > 0) {
         q = q.in(key, matchingStatuses as InstallStatus[]);
       } else {
-        q = q.is(key, null);
+        q = q.eq(key, "__no_match__" as InstallStatus);
       }
     } else if (key === "id" || key === "serial_number") {
       if (values.length > 1) {

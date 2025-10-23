@@ -4,9 +4,13 @@ import type { UserFilterKeyType } from "../consts/users";
 
 const supabase = createClient();
 
+export type UserFilter = {
+  key: UserFilterKeyType;
+  value: string;
+};
+
 export const getUsers = async (
-  filter?: UserFilterKeyType,
-  query?: string,
+  filters: UserFilter[] = [],
   page: number = 1,
   perPage: number = 20
 ): Promise<{ data: UserRow[]; count: number }> => {
@@ -15,20 +19,33 @@ export const getUsers = async (
     .select("*", { count: "exact" })
     .order("name", { ascending: true });
 
-  if (filter && query) {
-    q = q.ilike(filter, `${query}%`);
+  for (const { key, value } of filters) {
+    if (!value) continue;
+
+    const values = value
+      .split(",")
+      .map((v) => v.trim())
+      .filter(Boolean);
+
+    if (values.length === 0) continue;
+
+    if (values.length > 1) {
+      const orFilters = values.map((v) => `${key}.ilike.${v}%`).join(",");
+      q = q.or(orFilters);
+    } else {
+      q = q.ilike(key, `${values[0]}%`);
+    }
   }
 
   const from = (page - 1) * perPage;
   const to = from + perPage - 1;
-
   q = q.range(from, to);
 
   const { data, count, error } = await q;
   if (error) throw error;
 
   return {
-    data: data ?? [],
+    data: (data as UserRow[]) ?? [],
     count: count ?? 0,
   };
 };
@@ -47,7 +64,6 @@ export const updateUser = async (
     .from("users")
     .update(updates)
     .eq("id", id);
-
   if (error) throw error;
   return data ?? [];
 };
@@ -66,6 +82,5 @@ export const getUser = async (id: string): Promise<UserRow | null> => {
     .single();
 
   if (error) throw error;
-
-  return data;
+  return data ?? null;
 };

@@ -3,27 +3,28 @@
 import { useSearchParams } from "next/navigation";
 import { useQuery } from "@tanstack/react-query";
 import ListPage from "@/components/ListPage/ListPage";
-import { USER_COLUMNS } from "@/lib/consts/users";
-
 import { getUsers } from "@/lib/api/users";
-import type { UserFilterKeyType } from "@/lib/consts/users";
+import { USER_COLUMNS } from "@/lib/consts/users";
+import type { UserFilter } from "@/lib/api/users";
 
 export default function UsersPage() {
   const searchParams = useSearchParams();
   const currentPage = Number(searchParams.get("page")) || 1;
 
-  const filter = searchParams.get("filter") as UserFilterKeyType | undefined;
-  const query = searchParams.get("query") || undefined;
+  const filters: UserFilter[] = [];
 
-  const queryKey = "users";
+  searchParams.forEach((value, key) => {
+    if (!["page"].includes(key) && value) {
+      filters.push({ key: key as UserFilter["key"], value });
+    }
+  });
 
   const { data, isLoading, error } = useQuery({
-    queryKey: [queryKey, currentPage, filter, query],
-    queryFn: () => getUsers(filter, query, currentPage),
+    queryKey: ["users", currentPage, filters],
+    queryFn: () => getUsers(filters, currentPage),
   });
-  const totalPages = Math.ceil((data?.count ?? 0) / 20);
 
-  const pages = { current: currentPage, total: totalPages };
+  const totalPages = Math.ceil((data?.count ?? 0) / 20);
 
   return (
     <ListPage
@@ -32,8 +33,8 @@ export default function UsersPage() {
       tableData={data?.data}
       isLoading={isLoading}
       error={error}
+      pages={{ current: currentPage, total: totalPages }}
       clickableFields={["name"]}
-      pages={pages}
     />
   );
 }

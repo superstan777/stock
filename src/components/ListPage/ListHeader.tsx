@@ -5,6 +5,8 @@ import { Button } from "../ui/button";
 import { SearchControls } from "./SearchControls";
 import type { ColumnOption, EntityType } from "@/lib/types/table";
 import { FormDialog } from "./FormDialog";
+import { Badge } from "../ui/badge";
+import { ActiveFilters } from "./ActiveFilters";
 
 interface ListHeaderProps<T extends EntityType> {
   entity: T;
@@ -21,21 +23,31 @@ export const ListHeader = <T extends EntityType>({
       ? "Dashboard"
       : pathname.replace(/^\//, "").replace(/^\w/, (c) => c.toUpperCase());
 
+  const selectedFilters = [
+    { key: "status", label: "Status: New" },
+    { key: "assigned_to.email", label: "Assigned to: Alice" },
+    { key: "estimated_resolution_date", label: "Date: 2025-10-22" },
+  ];
+
   return (
-    <header className="flex items-center justify-between mb-4 gap-2">
-      <div className="flex items-center gap-2">
-        <h1 className="text-2xl font-bold">{title}</h1>
-        <SearchControls pathname={pathname} columns={columns} />
+    <header className="flex flex-col gap-2 mb-4 p-2 ">
+      <div className="flex items-center justify-between w-full gap-2">
+        <div className="flex items-center gap-2">
+          <h1 className="text-2xl font-bold">{title}</h1>
+          <SearchControls pathname={pathname} columns={columns} />
+        </div>
+
+        <FormDialog
+          entity={entity}
+          trigger={
+            <Button className="inline-flex items-center gap-2">
+              Create {entity}
+            </Button>
+          }
+        />
       </div>
 
-      <FormDialog
-        entity={entity}
-        trigger={
-          <Button className="inline-flex items-center gap-2">
-            Create {entity}
-          </Button>
-        }
-      />
+      <ActiveFilters />
     </header>
   );
 };
